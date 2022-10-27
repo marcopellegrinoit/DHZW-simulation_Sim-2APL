@@ -70,8 +70,8 @@ public class TripActivity extends Activity {
                 CodeTypeInterface.parseAsEnum(TransportMode.class, keyValue.get("modal_choice")),
                 ParserUtil.parseIntAsBoolean(keyValue.get("driver_flag")),
                 ParserUtil.parseIntAsBoolean(keyValue.get("passenger_flag")),
-                keyValue.get("pc4_start"),
-                keyValue.get("pc4_end")
+                keyValue.get("PC4_start"),
+                keyValue.get("PC4_end")
         );
     }
 

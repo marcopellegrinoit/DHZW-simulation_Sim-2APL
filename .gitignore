@@ -13,7 +13,7 @@ buildNumber.properties
 
 .idea
 
-src/main/resources/*
+src/main/resources/ODiN/*
 output*
 
 log/*.log
