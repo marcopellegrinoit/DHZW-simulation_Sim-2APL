@@ -31,7 +31,6 @@ public class ConfigModel {
 
     private static final Logger LOGGER = Logger.getLogger(ConfigModel.class.getName());
 
-    private final double fractionLiberal;
     private Random random;
     private final List<AgentID> agents = new ArrayList<>();
     private List<File> householdVotingAssignmentsFiles = null;
@@ -50,21 +49,12 @@ public class ConfigModel {
     private final ArgParse arguments;
     private final TomlTable table;
     private final String name;
-    private final int fipsCode;
-
     private String outputFileName;
 
     public ConfigModel(ArgParse arguments, String name, TomlTable table) throws Exception {
         this.arguments = arguments;
         this.name = name;
         this.table = table;
-        this.fipsCode = table.getLong("fipscode").intValue();
-
-        if(this.table.contains("fractionLiberal")) {
-            this.fractionLiberal = this.table.getDouble("fractionLiberal");
-        } else {
-            throw new Exception(String.format("The fractionLiberal for the county %s is not specified", this.name));
-        }
 
         if(this.householdVotingAssignmentsFiles == null && this.table.contains("householdVotingAssignments")) {
             this.householdVotingAssignmentsFiles = getFiles("householdVotingAssignments", false);
@@ -166,7 +156,7 @@ public class ConfigModel {
                 files.add(ArgParse.findFile(new File(arr.getString(i))));
             }
         } else if (required) {
-            throw new Exception(String.format("Missing required key %s for county %s", key, this.name));
+            throw new Exception(String.format("Missing required key %s", key));
         }
         return files;
     }
@@ -176,7 +166,7 @@ public class ConfigModel {
         if(this.table.contains(key)) {
             f = ArgParse.findFile(new File(this.table.getString(key)));
         } else if (required) {
-            throw new Exception(String.format("Missing required key %s for county %s", key, this.name));
+            throw new Exception(String.format("Missing required key %s", key));
         }
         return f;
     }
@@ -191,16 +181,11 @@ public class ConfigModel {
         }
 
         this.outputFileName = String.format(
-                "radius-of-gyration-%s-%s-%s%s.csv",
+                "radius-of-gyration-%s-%s%s.csv",
                 this.name,
-                this.fipsCode,
                 this.arguments.getNode() >= 0 ? "node" + this.arguments.getNode() : "",
                 descriptor
         );
-    }
-
-    public double getFractionLiberal() {
-        return fractionLiberal;
     }
 
     public Random getRandom() {
@@ -251,9 +236,6 @@ public class ConfigModel {
         return name;
     }
 
-    public int getFipsCode() {
-        return fipsCode;
-    }
 
     public String getOutFileName() {
         return this.outputFileName;

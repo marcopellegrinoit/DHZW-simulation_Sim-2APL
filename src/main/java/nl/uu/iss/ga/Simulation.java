@@ -44,30 +44,25 @@ public class Simulation {
         readCountyData();
         preparePlatform();
 
-        for(ConfigModel county : this.arguments.getCounties()) {
-            county.createAgents(this.platform, this.environmentInterface, tracker);
-        }
+        //for(ConfigModel county : this.arguments.getCounties()) {
+         //   county.createAgents(this.platform, this.environmentInterface, tracker);
+        //}
+        ConfigModel configModel = this.arguments.getConfigModel();
+        configModel.createAgents(this.platform, this.environmentInterface, tracker);
 
         this.environmentInterface.setSimulationStarted();
         this.simulationEngine.start();
     }
 
     private void readCountyData() {
-        if(arguments.getCounties().size() > 0) {
             List<Callable<Void>> callables = new ArrayList<>();
-            arguments.getCounties().forEach(x -> callables.add(x.getAsyncLoadFiles()));
+            callables.add(arguments.getConfigModel().getAsyncLoadFiles());
             try {
                 this.tickExecutor.useExecutorForTasks(callables);
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "Failed to read files", e);
                 System.exit(9);
             }
-        } else if (!arguments.getCounties().isEmpty()){
-            arguments.getCounties().get(0).loadFiles();
-        } else {
-            LOGGER.log(Level.INFO, "No counties found");
-            System.exit(0);
-        }
     }
 
     private void preparePlatform() {

@@ -31,13 +31,12 @@ public class ArgParse {
     @Arg(dest = "configuration")
     private File configuration;
 
-    private List<ConfigModel> counties = new ArrayList<>();
+    private ConfigModel configModel;
 
     @Arg(dest = "threads")
     private int threads;
 
     private long iterations;
-
     private LocalDate startdate;
 
     @Arg(dest = "outputdir")
@@ -152,11 +151,10 @@ public class ArgParse {
                 this.descriptor = result.getString("output.descriptor");
                 this.node = (int) result.getLong("output.node", () -> -1);
 
-                TomlTable table = result.getTable("counties");
+                TomlTable table = result.getTable("config");
 
-                for (String s : table.keySet()) {
-                    this.counties.add(new ConfigModel(this, s, table.getTable(s)));
-                }
+                this.configModel = new ConfigModel(this, "config", table);
+
             } catch (Exception e) {
                 throw new ArgumentParserException(e.getMessage(), p);
             }
@@ -174,8 +172,8 @@ public class ArgParse {
         return null;
     }
 
-    public List<ConfigModel> getCounties() {
-        return counties;
+    public ConfigModel getConfigModel() {
+        return this.configModel;
     }
 
     public Random getSystemWideRandom() {
