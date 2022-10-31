@@ -1,7 +1,7 @@
 [simulation]
 #seed = 102
 startdate = 2022-10-24
-iterations = 365 # End date; Alternatively, specify the number of iterations
+iterations = 1 # End date; Alternatively, specify the number of iterations
 diseasemodel = "../../../../pansim/tests/disease_models/seiar.toml"
 
 # Optionally, specify a list of files making up the household assignments, with headers "hid,is_liberal", using 1 for true

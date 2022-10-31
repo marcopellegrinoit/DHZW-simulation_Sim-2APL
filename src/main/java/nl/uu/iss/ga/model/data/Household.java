@@ -10,7 +10,6 @@ public class Household {
 
     private final int hhSize;
     private final GeoLocation location;
-
     private final long locationID;
 
     public Household(
@@ -41,8 +40,8 @@ public class Household {
         return new Household(
                 ParserUtil.parseAsLong(keyValue.get("hid")),
                 ParserUtil.parseAsInt(keyValue.get("hh_size")),
-                new GeoLocation(keyValue.get("pc6"),
-                        keyValue.get("pc4"),
+                new GeoLocation(keyValue.get("PC6"),
+                        keyValue.get("PC4"),
                         keyValue.get("neighb_code"),
                         ParserUtil.parseAsDouble(keyValue.get("longitude")),
                         ParserUtil.parseAsDouble(keyValue.get("latitude"))),

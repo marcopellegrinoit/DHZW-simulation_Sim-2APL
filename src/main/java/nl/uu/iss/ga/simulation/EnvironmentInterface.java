@@ -75,11 +75,12 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
     @Override
     public void tickPreHook(long tick) {
         this.currentTick = tick;
-        if (this.startDate == null) {
-            this.today = CodeTypeInterface.parseAsEnum(DayOfWeek.class, (int) (currentTick % 7 + 1));
-        } else {
-            this.today = DayOfWeek.fromDate(this.startDate.plusDays(tick));
-        }
+        // TODO, re-introduce this when we are using different days of the week
+//        if (this.startDate == null) {
+//            this.today = CodeTypeInterface.parseAsEnum(DayOfWeek.class, (int) (currentTick % 7 + 1));
+//        } else {
+//            this.today = DayOfWeek.fromDate(this.startDate.plusDays(tick));
+//        }
 
         String date = this.startDate.plusDays(tick).format(DateTimeFormatter.ISO_DATE);
 

@@ -41,7 +41,7 @@ public class Simulation {
         this.arguments = arguments;
         this.tickExecutor = new NoRescheduleBlockingTickExecutor<>(this.arguments.getThreads(), this.arguments.getSystemWideRandom());
 
-        readCountyData();
+        arguments.getConfigModel().loadFiles();
         preparePlatform();
 
         //for(ConfigModel county : this.arguments.getCounties()) {
@@ -55,14 +55,15 @@ public class Simulation {
     }
 
     private void readCountyData() {
-            List<Callable<Void>> callables = new ArrayList<>();
-            callables.add(arguments.getConfigModel().getAsyncLoadFiles());
-            try {
-                this.tickExecutor.useExecutorForTasks(callables);
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Failed to read files", e);
-                System.exit(9);
-            }
+
+//            List<Callable<Void>> callables = new ArrayList<>();
+//            callables.add(arguments.getConfigModel().getAsyncLoadFiles());
+//            try {
+//                this.tickExecutor.useExecutorForTasks(callables);
+//            } catch (Exception e) {
+//                LOGGER.log(Level.SEVERE, "Failed to read files", e);
+//                System.exit(9);
+//            }
     }
 
     private void preparePlatform() {

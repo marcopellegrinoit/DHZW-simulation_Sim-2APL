@@ -4,6 +4,7 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import main.java.nl.uu.iss.ga.model.data.dictionary.util.StringCodeTypeInterface;
 
 import java.util.Map;
 
@@ -67,7 +68,7 @@ public class TripActivity extends Activity {
     public static TripActivity fromLine(Activity baseActivity, Map<String, String> keyValue) {
         return new TripActivity(
                 baseActivity,
-                CodeTypeInterface.parseAsEnum(TransportMode.class, keyValue.get("modal_choice")),
+                StringCodeTypeInterface.parseAsEnum(TransportMode.class, keyValue.get("modal_choice")),
                 ParserUtil.parseIntAsBoolean(keyValue.get("driver_flag")),
                 ParserUtil.parseIntAsBoolean(keyValue.get("passenger_flag")),
                 keyValue.get("PC4_start"),
