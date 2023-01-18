@@ -9,19 +9,22 @@ public class Household {
     private final Long hid;
 
     private final int hhSize;
-    private final GeoLocation location;
-    private final long locationID;
+    private final String pc6;
+    private final String pc4;
+    private final String neighb_code;
 
     public Household(
             Long hid,
             int hhSize,
-            GeoLocation location,
-            long locationID
+            String pc4,
+            String pc6,
+            String neighb_code
     ) {
         this.hid = hid;
         this.hhSize = hhSize;
-        this.location = location;
-        this.locationID = locationID;
+        this.pc4 = pc4;
+        this.pc6 = pc6;
+        this.neighb_code = neighb_code;
     }
 
     public Long getHid() {
@@ -32,25 +35,13 @@ public class Household {
         return this.hhSize;
     }
 
-    public GeoLocation getLocation() {
-        return this.location;
-    }
-
     public static Household fromCSVLine(Map<String, String> keyValue) {
         return new Household(
-                ParserUtil.parseAsLong(keyValue.get("hid")),
+                ParserUtil.parseAsLong(keyValue.get("hh_ID")),
                 ParserUtil.parseAsInt(keyValue.get("hh_size")),
-                new GeoLocation(keyValue.get("PC6"),
-                        keyValue.get("PC4"),
-                        keyValue.get("neighb_code"),
-                        ParserUtil.parseAsDouble(keyValue.get("longitude")),
-                        ParserUtil.parseAsDouble(keyValue.get("latitude"))),
-                ParserUtil.parseAsLong(keyValue.get("hid"))
+                keyValue.get("PC4"),
+                keyValue.get("PC6"),
+                keyValue.get("neighb_code")
         );
     }
-
-    public long getLocationID() {
-        return locationID;
-    }
-
 }

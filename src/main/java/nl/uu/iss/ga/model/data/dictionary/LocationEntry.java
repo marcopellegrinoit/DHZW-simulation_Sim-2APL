@@ -96,7 +96,7 @@ public class LocationEntry {
     public static LocationEntry fromLine(Map<String, String> keyValue) {
         return new LocationEntry(
                 ParserUtil.parseAsLong(keyValue.get("hid")),
-                ParserUtil.parseAsLong(keyValue.get("pid")),
+                ParserUtil.parseAsLong(keyValue.get("agent_ID")),
                 ParserUtil.parseAsInt(keyValue.get("activity_number")),
                 CodeTypeInterface.parseAsEnum(ActivityType.class, keyValue.get("activity_type")),
                 new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time"))),

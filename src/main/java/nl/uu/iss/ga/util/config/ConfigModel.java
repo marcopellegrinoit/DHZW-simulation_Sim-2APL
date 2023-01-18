@@ -134,17 +134,13 @@ public class ConfigModel {
     }
 
     private LocationEntry findHomeLocation(ActivitySchedule schedule) {
-        long lid = this.personReader.getPersons().get(schedule.getPerson()).getHousehold().getLocationID();
-
         for(Activity activity : schedule.getSchedule().values()) {
-            if(activity.getActivityType().equals(ActivityType.HOME) && activity.getLocation().getLocationID() == lid) {
+            if(activity.getActivityType().equals(ActivityType.HOME)) {
                 activity.getLocation().setResidential(true);
                 return activity.getLocation();
             }
         }
-        LOGGER.log(Level.SEVERE,
-                String.format("No home location entry found for lid %d for person %d. Checked %d values",
-                        lid, schedule.getPerson(), schedule.getSchedule().size()));
+
         return null;
     }
 

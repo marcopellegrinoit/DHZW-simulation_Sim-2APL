@@ -44,7 +44,7 @@ public class Person implements Context {
 
     public static Person fromLine(Map<Long, Household> households, Map<String, String> keyValue) {
         return new Person(
-                households.get(ParserUtil.parseAsLong(keyValue.get("hid"))),
+                households.get(ParserUtil.parseAsLong(keyValue.get("hh_ID"))),
                 ParserUtil.parseAsLong(keyValue.get("pid")),
                 ParserUtil.parseAsInt(keyValue.get("age")),
                 StringCodeTypeInterface.parseAsEnum(Gender.class, keyValue.get("gender")),
