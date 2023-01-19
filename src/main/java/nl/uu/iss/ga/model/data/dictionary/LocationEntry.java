@@ -23,11 +23,13 @@ public class LocationEntry {
     private final String lid;
     private final double longitude;
     private final double latitude;
+    private final String pc4;
+    private final String pc6;
 
     // Artificially added
     private boolean isResidential = false;
 
-    public LocationEntry(Long hid, Long pid, int activity_number, ActivityType activity_type, ActivityTime starttime, int duration, String lid, double longitude, double latitude) {
+    public LocationEntry(Long hid, Long pid, int activity_number, ActivityType activity_type, ActivityTime starttime, int duration, String lid, double longitude, double latitude, String pc4, String pc6) {
         this.pid = pid;
         this.activity_number = activity_number;
         this.hid = hid;
@@ -37,6 +39,8 @@ public class LocationEntry {
         this.lid = lid;
         this.longitude = longitude;
         this.latitude = latitude;
+        this.pc4 = pc4;
+        this.pc6 = pc6;
     }
 
     public Long getPid() {
@@ -104,7 +108,17 @@ public class LocationEntry {
                 ParserUtil.parseAsInt(keyValue.get("duration")),
                 keyValue.get("lid"),
                 ParserUtil.parseAsDouble(keyValue.get("longitude")),
-                ParserUtil.parseAsDouble(keyValue.get("latitude"))
+                ParserUtil.parseAsDouble(keyValue.get("latitude")),
+                keyValue.get("pc4"),
+                keyValue.get("pc6")
         );
+    }
+
+    public String getPc4() {
+        return pc4;
+    }
+
+    public String getPc6() {
+        return pc6;
     }
 }
