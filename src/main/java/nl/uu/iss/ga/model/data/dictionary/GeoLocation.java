@@ -25,7 +25,7 @@ public class GeoLocation {
         return new GeoLocation(
                 keyValue.get("PC6"),
                 keyValue.get("PC4"),
-                keyValue.get("neighb_code"),
+                keyValue.get("neighbourhoodCode"),
                 ParserUtil.parseAsDouble(keyValue.get("longitude")),
                 ParserUtil.parseAsDouble(keyValue.get("latitude"))
         );

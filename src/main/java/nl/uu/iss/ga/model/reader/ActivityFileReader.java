@@ -23,7 +23,7 @@ public class ActivityFileReader {
     private final List<File> activityScheduleFiles;
     private final List<ActivitySchedule> activitySchedules;
     private final Map<Long, Map<Integer, LocationEntry>> locationMap;
-    private final Map<Long, LocationEntry> locationsByIDMap;
+    private final Map<String, LocationEntry> locationsByIDMap;
 
     public ActivityFileReader(List<File> activityScheduleFiles, LocationFileReader locationFileReader) {
         this.activityScheduleFiles = activityScheduleFiles;
@@ -102,17 +102,9 @@ public class ActivityFileReader {
         if (activity.getActivityType().equals(ActivityType.TRIP)) {
             activity = TripActivity.fromLine(activity, keyValue);
         } else {
-            long lid = ParserUtil.parseAsLong(keyValue.get("lid"));
-            LocationEntry entry;
-            if(lid < 0) {
-                // This means the locations are provided in a separate file
-                entry = this.locationMap.get(activity.getPid()).get(activity.getActivityNumber());
-            } else if(this.locationsByIDMap.containsKey(lid)) {
-                entry = this.locationsByIDMap.get(lid);
-            } else {
-                entry = LocationEntry.fromLine(keyValue);
-            }
+            LocationEntry entry = LocationEntry.fromLine(keyValue);
 
+            // put a fake number or something for when the location is outside of DHZW
             activity.setLocation(entry);
             if(!this.locationsByIDMap.containsKey(entry.getLocationID()))
                 this.locationsByIDMap.put(entry.getLocationID(), entry);

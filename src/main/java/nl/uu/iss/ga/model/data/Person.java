@@ -17,10 +17,11 @@ public class Person implements Context {
     private final int age;
     private final Gender gender;
     private final MigrationBackground migrationBackground;
-    private final Boolean isChild;
+    private final Boolean child;
     private final EducationCurrent currentEducation;
     private final EducationAttainment educationAttainment;
-
+    private final boolean carLicense;
+    private final boolean mopedLicense;
 
     // Original constructor
     public Person(
@@ -29,17 +30,21 @@ public class Person implements Context {
             int age,
             Gender gender,
             MigrationBackground migrationBackground,
-            Boolean isChild,
+            Boolean child,
             EducationCurrent currentEducation,
-            EducationAttainment educationAttainment) {
+            EducationAttainment educationAttainment,
+            boolean carLicense,
+            boolean mopedLicense) {
         this.household = household;
         this.pid = pid;
         this.age = age;
         this.gender = gender;
         this.migrationBackground = migrationBackground;
-        this.isChild = isChild;
+        this.child = child;
         this.currentEducation = currentEducation;
         this.educationAttainment = educationAttainment;
+        this.carLicense = carLicense;
+        this.mopedLicense = mopedLicense;
     }
 
     public static Person fromLine(Map<Long, Household> households, Map<String, String> keyValue) {
@@ -51,7 +56,10 @@ public class Person implements Context {
                 StringCodeTypeInterface.parseAsEnum(MigrationBackground.class, keyValue.get("migration_background")),
                 ParserUtil.parseIntAsBoolean(keyValue.get("is_child")),
                 StringCodeTypeInterface.parseAsEnum(EducationCurrent.class, keyValue.get("current_education")),
-                StringCodeTypeInterface.parseAsEnum(EducationAttainment.class, keyValue.get("edu_attainment")));
+                StringCodeTypeInterface.parseAsEnum(EducationAttainment.class, keyValue.get("edu_attainment")),
+                ParserUtil.parseIntAsBoolean(keyValue.get("car_license")),
+                ParserUtil.parseIntAsBoolean(keyValue.get("moped_license"))
+        );
     }
 
     public Household getHousehold() {
@@ -74,8 +82,8 @@ public class Person implements Context {
         return this.migrationBackground;
     }
 
-    public Boolean getIsChild() {
-        return this.isChild;
+    public Boolean isChild() {
+        return this.child;
     }
 
     public EducationCurrent getCurrentEducation() {
@@ -87,4 +95,11 @@ public class Person implements Context {
         return this.educationAttainment;
     }
 
+    public boolean hasCarLicense() {
+        return this.carLicense;
+    }
+
+    public boolean hasMopedLicense() {
+        return this.mopedLicense;
+    }
 }

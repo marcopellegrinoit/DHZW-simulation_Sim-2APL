@@ -16,7 +16,7 @@ public class LocationFileReader {
 
     private List<File> locationFiles;
     private Map<Long, Map<Integer, LocationEntry>> locations;
-    private Map<Long, LocationEntry> locationsByIDMap;
+    private Map<String, LocationEntry> locationsByIDMap;
 
     public LocationFileReader(List<File> locationFiles) {
         this.locationFiles = locationFiles;
@@ -33,7 +33,7 @@ public class LocationFileReader {
         return this.locations;
     }
 
-    public Map<Long, LocationEntry> getLocationsByIDMap() {
+    public Map<String, LocationEntry> getLocationsByIDMap() {
         return locationsByIDMap;
     }
 

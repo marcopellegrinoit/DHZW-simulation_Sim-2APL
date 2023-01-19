@@ -3,7 +3,7 @@ package main.java.nl.uu.iss.ga.model.data.dictionary;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.StringCodeTypeInterface;
 
 public enum MigrationBackground implements StringCodeTypeInterface {
-    DUTCH("Dutch"),  // (GQ/not a one-family house or mobile home)
+    DUTCH("Dutch"),
     WESTERN("Western"),
     NON_WESTERN("Non_Western");
 

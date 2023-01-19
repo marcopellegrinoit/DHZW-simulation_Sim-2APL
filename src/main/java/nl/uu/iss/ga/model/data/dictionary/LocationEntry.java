@@ -5,6 +5,7 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class LocationEntry {
 
@@ -19,14 +20,14 @@ public class LocationEntry {
     private final int duration;
 
     // Actual location data
-    private final Long lid;
+    private final String lid;
     private final double longitude;
     private final double latitude;
 
     // Artificially added
     private boolean isResidential = false;
 
-    public LocationEntry(Long hid, Long pid, int activity_number, ActivityType activity_type, ActivityTime starttime, int duration, Long lid, double longitude, double latitude) {
+    public LocationEntry(Long hid, Long pid, int activity_number, ActivityType activity_type, ActivityTime starttime, int duration, String lid, double longitude, double latitude) {
         this.pid = pid;
         this.activity_number = activity_number;
         this.hid = hid;
@@ -62,7 +63,7 @@ public class LocationEntry {
         return duration;
     }
 
-    public Long getLocationID() {
+    public String getLocationID() {
         return lid;
     }
 
@@ -95,13 +96,13 @@ public class LocationEntry {
 
     public static LocationEntry fromLine(Map<String, String> keyValue) {
         return new LocationEntry(
-                ParserUtil.parseAsLong(keyValue.get("hid")),
-                ParserUtil.parseAsLong(keyValue.get("agent_ID")),
+                ParserUtil.parseAsLong(keyValue.get("hh_ID")),
+                ParserUtil.parseAsLong(keyValue.get("pid")),
                 ParserUtil.parseAsInt(keyValue.get("activity_number")),
                 CodeTypeInterface.parseAsEnum(ActivityType.class, keyValue.get("activity_type")),
                 new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time"))),
                 ParserUtil.parseAsInt(keyValue.get("duration")),
-                ParserUtil.parseAsLong(keyValue.get("lid")),
+                keyValue.get("lid"),
                 ParserUtil.parseAsDouble(keyValue.get("longitude")),
                 ParserUtil.parseAsDouble(keyValue.get("latitude"))
         );

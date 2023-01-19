@@ -4,12 +4,12 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.util.StringCodeTypeInterface
 
 public enum ActivityType implements StringCodeTypeInterface {
 
-    TRIP("trip"),
     HOME("home"),
     WORK("work"),
-    SHOP("shopping"),
-    OTHER("other"),
-    SCHOOL("school");
+    SHOPPING("shopping"),
+    SCHOOL("school"),
+    SPORT("sport"),
+    TRIP("trip");
 
     private final int code;
     private final String stringCode;

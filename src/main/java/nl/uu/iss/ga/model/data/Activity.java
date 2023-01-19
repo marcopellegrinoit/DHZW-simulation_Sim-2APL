@@ -35,7 +35,7 @@ public class Activity extends Goal implements Cloneable {
     public static Activity fromLine(Map<String, String> keyValue) {
         return new Activity(
                 ParserUtil.parseAsLong(keyValue.get("pid")),
-                ParserUtil.parseAsLong(keyValue.get("hid")),
+                ParserUtil.parseAsLong(keyValue.get("hh_ID")),
                 ParserUtil.parseAsInt(keyValue.get("activity_number")),
                 StringCodeTypeInterface.parseAsEnum(ActivityType.class, keyValue.get("activity_type")),
                 new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time"))),
