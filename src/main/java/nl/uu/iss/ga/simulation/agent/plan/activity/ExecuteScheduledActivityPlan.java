@@ -28,6 +28,8 @@ public class ExecuteScheduledActivityPlan extends RunOncePlan<Activity> {
         BeliefContext beliefContext = planToAgentInterface.getContext(BeliefContext.class);
         ActivitySchedule schedule = planToAgentInterface.getContext(ActivitySchedule.class);
 
+        beliefContext.getActivityTypeTracker().notifyActivityType(this.activity.getActivityType());
+
         if (!context.testIsDayOfWeek(beliefContext.getToday())) {
             context.resetDaySchedule(beliefContext.getToday());
         }

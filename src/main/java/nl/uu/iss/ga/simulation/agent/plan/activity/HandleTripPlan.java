@@ -20,7 +20,7 @@ public class HandleTripPlan extends RunOncePlan<Activity> {
     public Activity executeOnce(PlanToAgentInterface<Activity> planInterface) throws PlanExecutionError {
         DayPlanContext context = planInterface.getContext(DayPlanContext.class);
         context.setLastTripActivity(this.trip);
-        planInterface.getContext(BeliefContext.class).getTracker().notifyTransportModeUsed(planInterface.getAgentID(), this.trip.getMode());
+        planInterface.getContext(BeliefContext.class).getModeOfTransportTracker().notifyTransportModeUsed(planInterface.getAgentID(), this.trip.getMode());
         return this.trip;
     }
 }

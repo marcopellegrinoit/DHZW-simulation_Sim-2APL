@@ -7,6 +7,7 @@ import main.java.nl.uu.iss.ga.simulation.NoRescheduleBlockingTickExecutor;
 import main.java.nl.uu.iss.ga.util.Java2APLLogger;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.config.ConfigModel;
+import main.java.nl.uu.iss.ga.util.tracking.ActivityTypeTracker;
 import main.java.nl.uu.iss.ga.util.tracking.ModeOfTransportTracker;
 import nl.uu.cs.iss.ga.sim2apl.core.defaults.messenger.DefaultMessenger;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
@@ -33,7 +34,8 @@ public class Simulation {
 
     private Platform platform;
     private NoRescheduleBlockingTickExecutor<Activity> tickExecutor;
-    private ModeOfTransportTracker tracker = new ModeOfTransportTracker();
+    private ModeOfTransportTracker modeOfTransportTracker = new ModeOfTransportTracker();
+    private ActivityTypeTracker activityTypeTracker = new ActivityTypeTracker();
     private EnvironmentInterface environmentInterface;
     private SimulationEngine<Activity> simulationEngine;
 
@@ -48,7 +50,7 @@ public class Simulation {
          //   county.createAgents(this.platform, this.environmentInterface, tracker);
         //}
         ConfigModel configModel = this.arguments.getConfigModel();
-        configModel.createAgents(this.platform, this.environmentInterface, tracker);
+        configModel.createAgents(this.platform, this.environmentInterface, modeOfTransportTracker, activityTypeTracker);
 
         this.environmentInterface.setSimulationStarted();
         this.simulationEngine.start();
@@ -74,7 +76,8 @@ public class Simulation {
         this.environmentInterface = new EnvironmentInterface(
                 platform,
                 this.arguments,
-                this.tracker
+                this.modeOfTransportTracker,
+                this.activityTypeTracker
         );
         this.simulationEngine = getLocalSimulationEngine();
     }

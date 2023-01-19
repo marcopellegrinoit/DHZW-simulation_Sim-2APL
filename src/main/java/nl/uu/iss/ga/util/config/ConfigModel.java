@@ -11,6 +11,7 @@ import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.EnvironmentTriggerPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
+import main.java.nl.uu.iss.ga.util.tracking.ActivityTypeTracker;
 import main.java.nl.uu.iss.ga.util.tracking.ModeOfTransportTracker;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Agent;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentArguments;
@@ -88,7 +89,6 @@ public class ConfigModel {
         this.personReader = new PersonReader(this.personFiles, this.householdReader.getHouseholds());
         this.locationFileReader = new LocationFileReader(this.locationsFiles);
         this.activityFileReader = new ActivityFileReader(this.activityFiles, this.locationFileReader);
-
     }
 
     public Callable<Void> getAsyncLoadFiles() {
@@ -98,18 +98,18 @@ public class ConfigModel {
         };
     }
 
-    public void createAgents(Platform platform, EnvironmentInterface environmentInterface, ModeOfTransportTracker tracker) {
-//        this.sleepGoal = new SleepGoal(5);
+    public void createAgents(Platform platform, EnvironmentInterface environmentInterface, ModeOfTransportTracker modeOfTransportTracker, ActivityTypeTracker activityTypeTracker) {
         for (ActivitySchedule schedule : this.activityFileReader.getActivitySchedules()) {
             schedule.splitActivitiesByDay();
-            createAgentFromSchedule(platform, environmentInterface, schedule, tracker);
+            createAgentFromSchedule(platform, environmentInterface, schedule, modeOfTransportTracker, activityTypeTracker);
         }
     }
-    private void createAgentFromSchedule(Platform platform, EnvironmentInterface environmentInterface, ActivitySchedule schedule, ModeOfTransportTracker tracker) {
+    private void createAgentFromSchedule(Platform platform, EnvironmentInterface environmentInterface, ActivitySchedule schedule, ModeOfTransportTracker modeOfTransportTracker, ActivityTypeTracker activityTypeTracker) {
          LocationEntry homeLocation = this.findHomeLocation(schedule);
 
         LocationHistoryContext locationHistoryContext = new LocationHistoryContext();
-        BeliefContext beliefContext = new BeliefContext(environmentInterface, homeLocation, tracker);
+        BeliefContext beliefContext = new BeliefContext(environmentInterface, homeLocation, modeOfTransportTracker, activityTypeTracker);
+
         AgentArguments<Activity> arguments = new AgentArguments<Activity>()
                 .addContext(this.personReader.getPersons().get(schedule.getPerson()))
                 .addContext(schedule)

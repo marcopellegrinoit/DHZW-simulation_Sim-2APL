@@ -3,10 +3,12 @@ package main.java.nl.uu.iss.ga.simulation;
 import main.java.nl.uu.iss.ga.Simulation;
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.TripActivity;
+import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
+import main.java.nl.uu.iss.ga.util.tracking.ActivityTypeTracker;
 import main.java.nl.uu.iss.ga.util.tracking.ModeOfTransportTracker;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
@@ -36,16 +38,19 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
     private final LocalDate startDate;
     private DayOfWeek today = DayOfWeek.MONDAY;
 
-    private ModeOfTransportTracker tracker;
+    private ModeOfTransportTracker modeOfTransportTracker;
+    private ActivityTypeTracker activityTypeTracker;
 
     public EnvironmentInterface(
             Platform platform,
             ArgParse arguments,
-            ModeOfTransportTracker tracker
+            ModeOfTransportTracker modeOfTransportTracker,
+            ActivityTypeTracker activityTypeTracker
     ) {
         this.platform = platform;
         this.arguments = arguments;
-        this.tracker = tracker;
+        this.modeOfTransportTracker = modeOfTransportTracker;
+        this.activityTypeTracker = activityTypeTracker;
 
         this.startDate = arguments.getStartdate();
 
@@ -84,7 +89,8 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
 
         String date = this.startDate.plusDays(tick).format(DateTimeFormatter.ISO_DATE);
 
-        tracker.reset();
+        modeOfTransportTracker.reset();
+        activityTypeTracker.reset();
     }
 
     @Override
@@ -93,13 +99,22 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
                 "Tick %d took %d milliseconds for %d agents (roughly %fms per agent)",
                 tick, lastTickDuration, agentActions.size(), (double) lastTickDuration / agentActions.size()));
 
-        for(TransportMode mode : this.tracker.getModeTrackerMap().keySet()) {
+        for(TransportMode mode : this.modeOfTransportTracker.getModeTrackerMap().keySet()) {
             LOGGER.log(Level.INFO, String.format(
                     "%s: %d",
                     mode,
-                    this.tracker.getModeTrackerMap().get(mode).get()
+                    this.modeOfTransportTracker.getModeTrackerMap().get(mode).get()
             ));
         }
+
+        for(ActivityType type : this.activityTypeTracker.getActivityTypeTrackerMap().keySet()) {
+            LOGGER.log(Level.INFO, String.format(
+                    "%s: %d",
+                    type,
+                    this.activityTypeTracker.getActivityTypeTrackerMap().get(type).get()
+            ));
+        }
+
         /*
             TODO:
                 - Write current tracker map to file
