@@ -1,6 +1,7 @@
 package main.java.nl.uu.iss.ga.simulation.agent.plan.activity;
 
 import main.java.nl.uu.iss.ga.model.data.*;
+import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.PlanToAgentInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.builtin.RunOncePlan;
@@ -38,13 +39,31 @@ public class ExecuteChainTripPlan extends RunOncePlan<TripChain> {
 
         Activity activityOrigin = activities.get(0);
         for (Activity activityDestination : activities.subList(1, activities.size())) {
+
+            // decide time and modal choice
+            ActivityTime departureTime = new ActivityTime(0);
+            ActivityTime arrivalTime = new ActivityTime(0);
+
+            TransportMode transportMode;
+
+            // some stupid differentiation to see if works
+            if (activityOrigin.getStartTime().getSeconds() == 0) {
+                transportMode = TransportMode.BUS;
+            } else {
+                transportMode = TransportMode.BICYCLE;
+            }
+
+            // add the trip to the chain
             this.tripChain.addTrip(new Trip(activityOrigin.getPid(),
-                    activityOrigin.getHid(),
-                    activityDestination.getActivityType(),
-                    activityOrigin.getLocation().getPc4(),
-                    activityDestination.getLocation().getPc4(),
-                    activityOrigin.getStartTime(),
-                    activityDestination.getStartTime()
+                                    activityOrigin.getHid(),
+                                    activityDestination.getActivityType(),
+                                    activityOrigin.getLocation().getPc4(),
+                                    activityDestination.getLocation().getPc4(),
+                                    activityOrigin.getStartTime(),
+                                    activityDestination.getStartTime(),
+                                    departureTime,
+                                    arrivalTime,
+                                    transportMode
             ));
             activityOrigin = activityDestination; // update past activity
         }
@@ -53,16 +72,13 @@ public class ExecuteChainTripPlan extends RunOncePlan<TripChain> {
             LOGGER.log(Level.INFO,"ExecuteSchedulesActivityPlan - " + person.getPid() + " - " + this.tripChain.getTripChain().size());
         }
 
-        // for each trip in the chain
+        // just for printing for each trip in the chain
         for (Trip trip : this.tripChain.getTripChain()) {
             if (person.getPid() == 84) {
-                LOGGER.log(Level.INFO,trip.getPreviousActivityTime() + " - " + trip.getNextActivityTime());
+                LOGGER.log(Level.INFO,trip.getPreviousActivityTime() + " - " + trip.getNextActivityTime() + " - " + trip.getTransportMode().getStringCode());
             }
-
-            // here is where I set the modal choice and the times about each trip in the chain
-            trip.setDepartureTime(trip.getPreviousActivityTime());
         }
 
-        return tripChain;
+        return this.tripChain;
     }
 }

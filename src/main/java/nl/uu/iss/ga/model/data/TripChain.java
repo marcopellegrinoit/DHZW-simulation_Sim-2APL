@@ -12,8 +12,8 @@ import java.util.logging.Logger;
 public class TripChain extends Goal implements Cloneable {
     private static final Logger LOGGER = Logger.getLogger(Simulation.class.getName());
     private List<Trip> chain;
-    private DayOfWeek day;
-    private long pid;
+    private final DayOfWeek day;
+    private final long pid;
 
     public TripChain(long pid, DayOfWeek day, List<Trip> chain) {
         this.pid = pid;
@@ -48,21 +48,11 @@ public class TripChain extends Goal implements Cloneable {
         return tripChain;
     }
 
-    public void setChain(List<Trip> chain) {
-        this.chain = chain;
-    }
-
     public void addTrip(Trip trip) {
         this.chain.add(trip);
     }
 
     public List<Trip> getTripChain() {return this.chain;}
-    public void setDay(DayOfWeek day){
-        this.day = day;
-    }
-    public void setPid(long pid){
-        this.pid = pid;
-    }
     public DayOfWeek getDay() {return this.day;}
     public long getPid() {return this.pid;}
 }
