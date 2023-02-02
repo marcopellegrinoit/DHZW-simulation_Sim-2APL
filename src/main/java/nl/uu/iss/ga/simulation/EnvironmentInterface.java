@@ -2,15 +2,11 @@ package main.java.nl.uu.iss.ga.simulation;
 
 import main.java.nl.uu.iss.ga.Simulation;
 import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.TripActivity;
-import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
-import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.tracking.ActivityTypeTracker;
 import main.java.nl.uu.iss.ga.util.tracking.ModeOfTransportTracker;
-import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
@@ -20,9 +16,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,20 +65,14 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
         return today;
     }
 
-    public Random getRnd(AgentID agentID) {
-//        return this.agentStateMap.getRandom(agentID);
-        return null; // todo, store on agent state somewhere orsomething idk
-    }
-
     @Override
     public void tickPreHook(long tick) {
         this.currentTick = tick;
-        // TODO, re-introduce this when we are using different days of the week
-//        if (this.startDate == null) {
-//            this.today = CodeTypeInterface.parseAsEnum(DayOfWeek.class, (int) (currentTick % 7 + 1));
-//        } else {
-//            this.today = DayOfWeek.fromDate(this.startDate.plusDays(tick));
-//        }
+        if (this.startDate == null) {
+            this.today = CodeTypeInterface.parseAsEnum(DayOfWeek.class, (int) (currentTick % 7 + 1));
+        } else {
+            this.today = DayOfWeek.fromDate(this.startDate.plusDays(tick));
+        }
 
         String date = this.startDate.plusDays(tick).format(DateTimeFormatter.ISO_DATE);
 
@@ -99,7 +86,7 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
                 "Tick %d took %d milliseconds for %d agents (roughly %fms per agent)",
                 tick, lastTickDuration, agentActions.size(), (double) lastTickDuration / agentActions.size()));
 
-        for(TransportMode mode : this.modeOfTransportTracker.getModeTrackerMap().keySet()) {
+/*        for(TransportMode mode : this.modeOfTransportTracker.getModeTrackerMap().keySet()) {
             LOGGER.log(Level.INFO, String.format(
                     "%s: %d",
                     mode,
@@ -113,33 +100,14 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
                     type,
                     this.activityTypeTracker.getActivityTypeTrackerMap().get(type).get()
             ));
-        }
+        }*/
 
         /*
             TODO:
                 - Write current tracker map to file
                 - Print stats?
          */
-//        int activities = 0;
-//        int trips = 0;
-//
-//        try {
-//            for (Future<DeliberationResult<Activity>> deliberationResult : agentActions) {
-//                DeliberationResult<Activity> result = deliberationResult.get();
-//                for(Activity activity : result.getActions()) {
-//                    if (activity instanceof TripActivity) trips++;
-//                    else activities++;
-//                }
-//            }
-//        } catch (ExecutionException | InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        LOGGER.log(Level.INFO, String.format(
-//                "%d agents performed %d trips and %d other activities",
-//                agentActions.size(),
-//                trips, activities
-//        ));
+
     }
 
     @Override

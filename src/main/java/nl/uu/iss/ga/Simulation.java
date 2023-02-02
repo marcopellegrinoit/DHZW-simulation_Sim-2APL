@@ -14,12 +14,7 @@ import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.SimulationEngine;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class Simulation {
     private static final Logger LOGGER = Logger.getLogger(Simulation.class.getName());
@@ -46,26 +41,11 @@ public class Simulation {
         arguments.getConfigModel().loadFiles();
         preparePlatform();
 
-        //for(ConfigModel county : this.arguments.getCounties()) {
-         //   county.createAgents(this.platform, this.environmentInterface, tracker);
-        //}
         ConfigModel configModel = this.arguments.getConfigModel();
         configModel.createAgents(this.platform, this.environmentInterface, modeOfTransportTracker, activityTypeTracker);
 
         this.environmentInterface.setSimulationStarted();
         this.simulationEngine.start();
-    }
-
-    private void readCountyData() {
-
-//            List<Callable<Void>> callables = new ArrayList<>();
-//            callables.add(arguments.getConfigModel().getAsyncLoadFiles());
-//            try {
-//                this.tickExecutor.useExecutorForTasks(callables);
-//            } catch (Exception e) {
-//                LOGGER.log(Level.SEVERE, "Failed to read files", e);
-//                System.exit(9);
-//            }
     }
 
     private void preparePlatform() {

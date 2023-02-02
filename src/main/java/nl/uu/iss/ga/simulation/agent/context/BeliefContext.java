@@ -16,20 +16,15 @@ import java.util.Random;
 public class BeliefContext implements Context {
     private AgentID me;
     private final EnvironmentInterface environmentInterface;
-    private double priorTrustAttitude;
-    private final LocationEntry homeLocation;
-
     private final ModeOfTransportTracker modeOfTransportTracker;
     private final ActivityTypeTracker activityTypeTracker;
 
     public BeliefContext(
             EnvironmentInterface environmentInterface,
-            LocationEntry homeLocation,
             ModeOfTransportTracker modeOfTransportTracker,
             ActivityTypeTracker activityTypeTracker
     ) {
         this.environmentInterface = environmentInterface;
-        this.homeLocation = homeLocation;
         this.modeOfTransportTracker = modeOfTransportTracker;
         this.activityTypeTracker = activityTypeTracker;
     }
@@ -45,23 +40,6 @@ public class BeliefContext implements Context {
     public long getCurrentTick() {
         return this.environmentInterface.getCurrentTick();
     }
-
-    public Random getRandom() {
-        return this.environmentInterface.getRnd(this.me);
-    }
-
-    public double getPriorTrustAttitude() {
-        return priorTrustAttitude;
-    }
-
-    public void setPriorTrustAttitude(double priorTrustAttitude) {
-        this.priorTrustAttitude = priorTrustAttitude;
-    }
-
-    public LocationEntry getHomeLocation() {
-        return homeLocation;
-    }
-
 
     public ModeOfTransportTracker getModeOfTransportTracker() {
         return modeOfTransportTracker;

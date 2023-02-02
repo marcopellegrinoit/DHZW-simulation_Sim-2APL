@@ -1,64 +1,64 @@
 package main.java.nl.uu.iss.ga.simulation.agent.planscheme;
 
-import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.TripActivity;
-import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import main.java.nl.uu.iss.ga.model.data.*;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
-import main.java.nl.uu.iss.ga.simulation.agent.plan.AdjustTrustAttitudePlan;
-import main.java.nl.uu.iss.ga.simulation.agent.plan.SleepGoal;
-import main.java.nl.uu.iss.ga.simulation.agent.plan.SleepPlan;
-import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.CancelActivityPlan;
-import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.ExecuteScheduledActivityPlan;
-import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.HandleTripPlan;
-import main.java.nl.uu.iss.ga.simulation.agent.trigger.AdjustTrustAttitudeGoal;
-import main.java.nl.uu.iss.ga.util.tracking.activities.InfluencedActivitiesInterface;
+import main.java.nl.uu.iss.ga.simulation.agent.plan.activity.ExecuteChainTripPlan;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Trigger;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.Plan;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.PlanScheme;
 
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class GoalPlanScheme implements PlanScheme<Activity> {
+public class GoalPlanScheme implements PlanScheme<TripChain> {
 
     private static final Logger LOGGER = Logger.getLogger(GoalPlanScheme.class.getName());
 
-    public static InfluencedActivitiesInterface influencedActivitiesTracker;
-
-    AgentContextInterface<Activity> agentContextInterface;
+    AgentContextInterface<TripChain> agentContextInterface;
 
     @Override
-    public Plan<Activity> instantiate(Trigger trigger, AgentContextInterface<Activity> agentContextInterface) {
+    public Plan<TripChain> instantiate(Trigger trigger, AgentContextInterface<TripChain> agentContextInterface) {
         this.agentContextInterface = agentContextInterface;
         BeliefContext context = agentContextInterface.getContext(BeliefContext.class);
 
-        // for each activity in the weekly schedule
-        if (trigger instanceof Activity) {
-            Activity activity = (Activity) trigger;
+        // for each activity in the weekly activity schedule
+        if (trigger instanceof ActivityChain) {
+            ActivityChain activityChain = (ActivityChain) trigger;
 
-            // check if the time corresponds to today (day-based)
-            // remove this block and work here
+            // look for a plan only if the chain is about this new day
+            if (context.getToday().equals(activityChain.getDay())) {
 
-            if (context.getToday().equals(activity.getStartTime().getDayOfWeek())) {
-                // Trigger applies to today
+                if (activityChain.getPid() == 84) {
+                    LOGGER.log(Level.INFO,"GoalPlanScheme - " + activityChain.getDay() + " - " + activityChain.getActivityChain().size());
 
-                if (activity.getActivityType().equals(ActivityType.TRIP)) {
-                    return new HandleTripPlan((TripActivity) activity);
-                } else {
-                    return new ExecuteScheduledActivityPlan(activity);
+                    List <Activity> activities = activityChain.getActivityChain();
+
+                    // Instantiate new empty chain of trips
+                    TripChain tripChain = new TripChain(activityChain.getPid(), activityChain.getDay());
+
+                    Activity activityOrigin = activities.get(0);
+                    for (Activity activityDestination : activities.subList(1, activities.size())) {
+                        tripChain.addTrip(new Trip(activityOrigin.getPid(),
+                                                    activityOrigin.getHid(),
+                                                    activityDestination.getActivityType(),
+                                                    activityOrigin.getLocation().getPc4(),
+                                                    activityDestination.getLocation().getPc4(),
+                                                    activityOrigin.getStartTime(),
+                                                    activityDestination.getStartTime()
+                        ));
+                        activityOrigin = activityDestination; // update past activity
+                    }
+
+                    return new ExecuteChainTripPlan(tripChain);
                 }
 
             }
-        } else if (trigger instanceof AdjustTrustAttitudeGoal) {
-            AdjustTrustAttitudeGoal adjustTrustAttitudeGoal = (AdjustTrustAttitudeGoal) trigger;
-            if (context.getCurrentTick() >= adjustTrustAttitudeGoal.getFatigueStart()) {
-                return new AdjustTrustAttitudePlan(adjustTrustAttitudeGoal);
-            }
-        } else if (trigger instanceof SleepGoal) {
-            return new SleepPlan((SleepGoal) trigger);
+
         }
+
 
         return Plan.UNINSTANTIATED();
     }
-
 }

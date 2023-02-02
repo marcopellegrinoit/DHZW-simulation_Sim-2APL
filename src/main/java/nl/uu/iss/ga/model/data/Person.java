@@ -1,6 +1,9 @@
 package main.java.nl.uu.iss.ga.model.data;
 
-import main.java.nl.uu.iss.ga.model.data.dictionary.*;
+import main.java.nl.uu.iss.ga.model.data.dictionary.individuals.EducationAttainment;
+import main.java.nl.uu.iss.ga.model.data.dictionary.individuals.EducationCurrent;
+import main.java.nl.uu.iss.ga.model.data.dictionary.individuals.Gender;
+import main.java.nl.uu.iss.ga.model.data.dictionary.individuals.MigrationBackground;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.StringCodeTypeInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;

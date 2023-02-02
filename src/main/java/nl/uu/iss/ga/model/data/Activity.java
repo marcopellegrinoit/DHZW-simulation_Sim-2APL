@@ -11,23 +11,21 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.Goal;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class Activity extends Goal implements Cloneable {
+public class Activity {
     private static final Logger LOGGER = Logger.getLogger(Simulation.class.getName());
     private final long pid;
     private final long hid;
     private final int activityNumber;
     private final ActivityType activityType;
-    private ActivityTime startTime;
-    private int duration;
+    private final ActivityTime startTime;
     private LocationEntry location;
 
-    public Activity(long pid, long hid, int activityNumber, ActivityType activityType, ActivityTime startTime, int duration) {
+    public Activity(long pid, long hid, int activityNumber, ActivityType activityType, ActivityTime startTime) {
         this.pid = pid;
         this.hid = hid;
         this.activityNumber = activityNumber;
         this.activityType = activityType;
         this.startTime = startTime;
-        this.duration = duration;
     }
 
     public static Activity fromLine(Map<String, String> keyValue) {
@@ -36,18 +34,10 @@ public class Activity extends Goal implements Cloneable {
                 ParserUtil.parseAsLong(keyValue.get("hh_ID")),
                 ParserUtil.parseAsInt(keyValue.get("activity_number")),
                 StringCodeTypeInterface.parseAsEnum(ActivityType.class, keyValue.get("activity_type")),
-                new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time"))),
-                ParserUtil.parseAsInt(keyValue.get("duration"))
+                new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time_seconds")))
         );
     }
 
-    @Override
-    public boolean isAchieved(AgentContextInterface agentContextInterface) {
-        // Activity should never be associated with a plan as a goal, and should never be achieved
-        return false;
-    }
-
-    @Override
     public String toString() {
         // start_time, duration, location, mask_state, disease_state
 
@@ -55,21 +45,8 @@ public class Activity extends Goal implements Cloneable {
                 "%s (%s) %s - %s",
                 this.getActivityType(),
                 this.startTime,
-                new ActivityTime(this.startTime.getSeconds() + this.duration)
+                new ActivityTime(this.startTime.getSeconds())
         );
-    }
-
-    @Override
-    public Activity clone() {
-        Activity activity = new Activity(
-                this.pid,
-                this.hid,
-                this.activityNumber,
-                this.activityType,
-                this.startTime.clone(),
-                this.duration
-        );
-        return activity;
     }
 
     public long getPid() {
@@ -88,19 +65,12 @@ public class Activity extends Goal implements Cloneable {
     public ActivityTime getStartTime() {
         return startTime;
     }
-    public void setStartTime(ActivityTime startTime) {
-        this.startTime = startTime;
-    }
-    public int getDuration() {
-        return this.duration;
-    }
-    public void setDuration(int duration) {
-        this.duration = duration;
-    }
+
     public LocationEntry getLocation() {
         return location;
     }
     public void setLocation(LocationEntry location) {
         this.location = location;
     }
+
 }

@@ -8,8 +8,6 @@ public enum TransportMode implements StringCodeTypeInterface {
     TRAM("tram"),
     BUS("bus"),
     TRAIN("train"),
-    OTHER("other"),
-    SUBWAY("subway"),
     FOOT("foot");
 
     private final int code;

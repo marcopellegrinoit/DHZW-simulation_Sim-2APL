@@ -3,9 +3,7 @@ package main.java.nl.uu.iss.ga.model.reader;
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
 import main.java.nl.uu.iss.ga.model.data.ActivityTime;
-import main.java.nl.uu.iss.ga.model.data.TripActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
-import main.java.nl.uu.iss.ga.model.data.dictionary.DetailedActivity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 
@@ -22,13 +20,9 @@ public class ActivityFileReader {
 
     private final List<File> activityScheduleFiles;
     private final List<ActivitySchedule> activitySchedules;
-    private final Map<Long, Map<Integer, LocationEntry>> locationMap;
-    private final Map<String, LocationEntry> locationsByIDMap;
 
-    public ActivityFileReader(List<File> activityScheduleFiles, LocationFileReader locationFileReader) {
+    public ActivityFileReader(List<File> activityScheduleFiles) {
         this.activityScheduleFiles = activityScheduleFiles;
-        this.locationMap = locationFileReader.getLocations();
-        this.locationsByIDMap = locationFileReader.getLocationsByIDMap();
 
         this.activitySchedules = new ArrayList<>();
         for(File f : this.activityScheduleFiles) {
@@ -97,35 +91,15 @@ public class ActivityFileReader {
 
     public Map<Integer, ActivityType> failedDetailedActivities = new HashMap<>();
 
+    /**
+     * Read an activity from the line and add the location to it
+     * @param keyValue
+     * @return
+     */
     private Activity getActivityFromLine(Map<String, String> keyValue) {
         Activity activity = Activity.fromLine(keyValue);
-        if (activity.getActivityType().equals(ActivityType.TRIP)) {
-            activity = TripActivity.fromLine(activity, keyValue);
-        } else {
-            LocationEntry entry = LocationEntry.fromLine(keyValue);
-
-            // put a fake number or something for when the location is outside of DHZW
-            activity.setLocation(entry);
-            if(!this.locationsByIDMap.containsKey(entry.getLocationID()))
-                this.locationsByIDMap.put(entry.getLocationID(), entry);
-            if(!this.locationMap.containsKey(activity.getPid()))
-                this.locationMap.put(activity.getPid(), new TreeMap<>());
-            if(!this.locationMap.get(activity.getPid()).containsKey(activity.getActivityNumber()))
-                this.locationMap.get(activity.getPid()).put(activity.getActivityNumber(), entry);
-        }
-
-        /*
-        if(activity == null && activity.getActivityType().equals(ActivityType.TRIP)) {
-            activity(DetailedActivity.TRIP);
-        } else if (activity.getDetailed_activity() == null) {
-            int detailedActivityNumber = ParserUtil.parseAsInt(keyValue.get("detailed_activity"));
-            if (!this.failedDetailedActivities.containsKey(ParserUtil.parseAsInt(keyValue.get("detailed_activity")))) {
-                this.failedDetailedActivities.put(detailedActivityNumber, activity.getActivityType());
-            }
-            activity.setDetailed_activity(DetailedActivity.NOT_IN_DICTIONARY);
-        }
-        */
-
+        LocationEntry entry = LocationEntry.fromLine(keyValue);
+        activity.setLocation(entry);
         return activity;
     }
 }

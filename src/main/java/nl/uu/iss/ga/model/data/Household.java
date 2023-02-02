@@ -1,6 +1,7 @@
 package main.java.nl.uu.iss.ga.model.data;
 
-import main.java.nl.uu.iss.ga.model.data.dictionary.*;
+import main.java.nl.uu.iss.ga.model.data.dictionary.households.HouseholdType;
+import main.java.nl.uu.iss.ga.model.data.dictionary.households.StandardizedIncomeGroup;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.StringCodeTypeInterface;
 
@@ -42,8 +43,8 @@ public class Household {
                 ParserUtil.parseAsInt(keyValue.get("hh_size")),
                 keyValue.get("PC4"),
                 keyValue.get("PC6"),
-                keyValue.get("neighbourhoodCode"),
-                StringCodeTypeInterface.parseAsEnum(HouseholdType.class, keyValue.get("hhType")),
+                keyValue.get("neighb_code"),
+                StringCodeTypeInterface.parseAsEnum(HouseholdType.class, keyValue.get("hh_type")),
                 StringCodeTypeInterface.parseAsEnum(StandardizedIncomeGroup.class, keyValue.get("income_group")),
                 ParserUtil.parseIntAsBoolean(keyValue.get("car_ownership"))
         );

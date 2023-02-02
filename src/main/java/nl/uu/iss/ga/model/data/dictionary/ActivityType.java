@@ -8,9 +8,7 @@ public enum ActivityType implements StringCodeTypeInterface {
     WORK("work"),
     SHOPPING("shopping"),
     SCHOOL("school"),
-    SPORT("sport"),
-    TRIP("trip");
-
+    SPORT("sport");
     private final int code;
     private final String stringCode;
 

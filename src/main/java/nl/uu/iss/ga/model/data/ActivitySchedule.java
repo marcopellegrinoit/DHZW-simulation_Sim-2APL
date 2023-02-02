@@ -42,29 +42,11 @@ public class ActivitySchedule implements Context {
      */
     public Activity getScheduledActivityAfter(int secondsSinceSundayMidnight) {
         for(ActivityTime time : this.schedule.keySet()) {
-            if(time.getSeconds() > secondsSinceSundayMidnight && !(this.schedule.get(time) instanceof TripActivity)) {
+            if(time.getSeconds() > secondsSinceSundayMidnight) {
                 return this.schedule.get(time);
             }
         }
         return null;
     }
 
-    public void splitActivitiesByDay() {
-        List<Activity> insertActivities = new LinkedList<>();
-        for(ActivityTime activityTime : this.schedule.keySet()) {
-            // -1 to avoid going to the next day if activity ends at 23:59:59
-            ActivityTime endTime = new ActivityTime(activityTime.getSeconds() + this.schedule.get(activityTime).getDuration() - 1);
-            if(!activityTime.getDayOfWeek().equals(endTime.getDayOfWeek())) {
-                this.schedule.get(activityTime).setDuration(activityTime.getDurationUntilEndOfDay());
-                Activity addedMorningActivity = this.schedule.get(activityTime).clone();
-                addedMorningActivity.setStartTime(new ActivityTime(endTime.getDayOfWeek().getSecondsSinceMidnightForDayStart()));
-                addedMorningActivity.setDuration(endTime.getSeconds() - addedMorningActivity.getStartTime().getSeconds());
-                insertActivities.add(addedMorningActivity);
-            }
-        }
-
-        for(Activity activity : insertActivities) {
-            this.schedule.put(activity.getStartTime(), activity);
-        }
-    }
 }

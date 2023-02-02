@@ -1,7 +1,6 @@
 package main.java.nl.uu.iss.ga.simulation.agent.context;
 
-import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.TripActivity;
+import main.java.nl.uu.iss.ga.model.data.Trip;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
 
@@ -15,10 +14,9 @@ public class DayPlanContext implements Context {
     private static final Logger LOGGER = Logger.getLogger(DayPlanContext.class.getName());
 
     private DayOfWeek dayOfWeek;
-    private List<Activity> daySchedule;
-    private boolean adjustTime = false;
+    private List<Trip> daySchedule;
 
-    private TripActivity lastTripActivity;
+    private Trip lastTrip;
 
     public boolean testIsDayOfWeek(DayOfWeek dayOfWeek) {
         return this.dayOfWeek != null && this.dayOfWeek.equals(dayOfWeek);
@@ -27,26 +25,27 @@ public class DayPlanContext implements Context {
     public void resetDaySchedule(DayOfWeek dayOfWeek) {
         this.dayOfWeek = dayOfWeek;
         this.daySchedule = new ArrayList<>();
-        this.lastTripActivity = null;
-        this.adjustTime = false;
+        this.lastTrip = null;
     }
 
-    public void addCandidateActivity(Activity activity) {
-        if(!activity.getStartTime().getDayOfWeek().equals(this.dayOfWeek)) {
+    public void addTrip(Trip trip) {
+        if(!trip.getDepartureTime().getDayOfWeek().equals(this.dayOfWeek)) {
             LOGGER.log(Level.WARNING, String.format(
                     "Trying to add activity for %s but today is %s",
-                    activity.getStartTime().getDayOfWeek(), this.dayOfWeek));
+                    trip.getDepartureTime().getDayOfWeek(), this.dayOfWeek));
         }
+        // loop through the activity schedule and place the activity at the right place
         for(int i = 0; i < daySchedule.size(); i++) {
-            if(activity.getStartTime().getSeconds() < this.daySchedule.get(i).getStartTime().getSeconds()) {
-                this.daySchedule.add(i, activity);
+            if(trip.getDepartureTime().getSeconds() < this.daySchedule.get(i).getDepartureTime().getSeconds()) {
+                this.daySchedule.add(i, trip);
                 return;
             }
         }
-        this.daySchedule.add(activity);
+        // if it is the last activity of the day
+        this.daySchedule.add(trip);
     }
 
-    public Activity getLastActivity() {
+    public Trip getLastTrip() {
         if(this.daySchedule.isEmpty()) {
             return null;
         } else {
@@ -54,28 +53,12 @@ public class DayPlanContext implements Context {
         }
     }
 
-    public int getFirstAvailableTime() {
-        if(this.daySchedule.isEmpty()) {
-            return this.dayOfWeek.getSecondsSinceMidnightForDayStart();
-        } else {
-            return getLastActivity().getStartTime().getSeconds() +
-                    getLastActivity().getDuration();
-        }
+    public Trip getLastTripActivity() {
+        return lastTrip;
     }
 
-    public TripActivity getLastTripActivity() {
-        return lastTripActivity;
+    public void setLastTrip(Trip lastTripActivity) {
+        this.lastTrip = lastTrip;
     }
 
-    public void setLastTripActivity(TripActivity lastTripActivity) {
-        this.lastTripActivity = lastTripActivity;
-    }
-
-    public boolean isAdjustTime() {
-        return adjustTime;
-    }
-
-    public void setAdjustTime(boolean adjustTime) {
-        this.adjustTime = adjustTime;
-    }
 }

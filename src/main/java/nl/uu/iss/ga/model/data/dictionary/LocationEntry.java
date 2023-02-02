@@ -3,6 +3,7 @@ package main.java.nl.uu.iss.ga.model.data.dictionary;
 import main.java.nl.uu.iss.ga.model.data.ActivityTime;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.ParserUtil;
+import main.java.nl.uu.iss.ga.model.data.dictionary.util.StringCodeTypeInterface;
 
 import java.util.Map;
 import java.util.Objects;
@@ -11,13 +12,12 @@ public class LocationEntry {
 
     // Required for matching
     private final Long pid;
-    private final int activity_number;
+    private final int activityNumber;
 
     // Redundant. May serve as check
     private final Long hid;
-    private final ActivityType activity_type;
-    private final ActivityTime starttime;
-    private final int duration;
+    private final ActivityType activityType;
+    private final ActivityTime startTime;
 
     // Actual location data
     private final String lid;
@@ -26,16 +26,13 @@ public class LocationEntry {
     private final String pc4;
     private final String pc6;
 
-    // Artificially added
-    private boolean isResidential = false;
 
-    public LocationEntry(Long hid, Long pid, int activity_number, ActivityType activity_type, ActivityTime starttime, int duration, String lid, double longitude, double latitude, String pc4, String pc6) {
+    public LocationEntry(Long hid, Long pid, int activityNumber, ActivityType activityType, ActivityTime startTime, String lid, double longitude, double latitude, String pc4, String pc6) {
         this.pid = pid;
-        this.activity_number = activity_number;
+        this.activityNumber = activityNumber;
         this.hid = hid;
-        this.activity_type = activity_type;
-        this.starttime = starttime;
-        this.duration = duration;
+        this.activityType = activityType;
+        this.startTime = startTime;
         this.lid = lid;
         this.longitude = longitude;
         this.latitude = latitude;
@@ -44,47 +41,35 @@ public class LocationEntry {
     }
 
     public Long getPid() {
-        return pid;
+        return this.pid;
     }
 
-    public int getActivity_number() {
-        return activity_number;
+    public int getActivityNumber() {
+        return this.activityNumber;
     }
 
     public Long getHid() {
-        return hid;
+        return this.hid;
     }
 
-    public ActivityType getActivity_type() {
-        return activity_type;
+    public ActivityType getActivityType() {
+        return this.activityType;
     }
 
-    public ActivityTime getStarttime() {
-        return starttime;
-    }
-
-    public int getDuration() {
-        return duration;
+    public ActivityTime getStartTime() {
+        return this.startTime;
     }
 
     public String getLocationID() {
-        return lid;
+        return this.lid;
     }
 
     public double getLongitude() {
-        return longitude;
+        return this.longitude;
     }
 
     public double getLatitude() {
-        return latitude;
-    }
-
-    public boolean isResidential() {
-        return isResidential;
-    }
-
-    public void setDesignation(String designation, boolean isResidential) {
-        this.isResidential = isResidential;
+        return this.latitude;
     }
 
     /**
@@ -94,18 +79,13 @@ public class LocationEntry {
      * @return True if this location can be excluded from a norm only applying to N.E.B. type businesses
      */
 
-    public void setResidential(boolean isResidential) {
-        this.isResidential = isResidential;
-    }
-
     public static LocationEntry fromLine(Map<String, String> keyValue) {
         return new LocationEntry(
                 ParserUtil.parseAsLong(keyValue.get("hh_ID")),
                 ParserUtil.parseAsLong(keyValue.get("pid")),
                 ParserUtil.parseAsInt(keyValue.get("activity_number")),
-                CodeTypeInterface.parseAsEnum(ActivityType.class, keyValue.get("activity_type")),
+                StringCodeTypeInterface.parseAsEnum(ActivityType.class, keyValue.get("activity_type")),
                 new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time"))),
-                ParserUtil.parseAsInt(keyValue.get("duration")),
                 keyValue.get("lid"),
                 ParserUtil.parseAsDouble(keyValue.get("longitude")),
                 ParserUtil.parseAsDouble(keyValue.get("latitude")),

@@ -58,21 +58,6 @@ public class ArgParse {
     @Arg(dest = "logproperties")
     private File logproperties;
 
-    @Arg(dest = "diseaseseeddays")
-    private Integer diseaseseeddays;
-
-    @Arg(dest = "diseaseseednumber")
-    private Integer diseaseseednumber;
-
-    @Arg(dest = "additionaldiseasedays")
-    private Integer additionaldiseasedays;
-
-    @Arg(dest = "additionaldiseasedaysnum")
-    private Integer additionaldiseasedaysnum;
-
-    private BetaDistribution liberalTrustDistribution;
-    private BetaDistribution conservativeTrustDistribution;
-
     private boolean saveStateDataFrames = false;
     private boolean saveVisitsDataFrames = false;
 
@@ -129,18 +114,6 @@ public class ArgParse {
                     this.random = new Random();
                 }
 
-                if(result.contains("infectionseeding.perday") && this.diseaseseednumber == null) {
-                    this.diseaseseednumber = result.getLong("infectionseeding.perday").intValue();
-                }
-                if(result.contains("infectionseeding.days") && this.diseaseseeddays == null) {
-                    this.diseaseseeddays = result.getLong("infectionseeding.days").intValue();
-                }
-                if(result.contains("infectionseeding.additional_every_other_days") && this.additionaldiseasedays == null) {
-                    this.additionaldiseasedays = result.getLong("infectionseeding.additional_every_other_days").intValue();
-                }
-                if(result.contains("infectionseeding.additional_every_other_days_num") && this.additionaldiseasedaysnum == null) {
-                    this.additionaldiseasedaysnum = result.getLong("infectionseeding.additional_every_other_days_num").intValue();
-                }
                 if(result.contains("savestate")) {
                     this.saveStateDataFrames = result.getBoolean("savestate");
                 }
@@ -222,30 +195,6 @@ public class ArgParse {
 
     public String getOutputDir() {
         return outputdir;
-    }
-
-    public boolean isDiseaseSeeding() {
-        return diseaseseeddays + diseaseseednumber > 0;
-    }
-
-    public int getDiseaseSeedDays() {
-        return diseaseseeddays == null ? 0 : diseaseseeddays;
-    }
-
-    public int getDiseaseSeedNumAgentsPerDay() {
-        return diseaseseednumber == null ? 0 : diseaseseednumber;
-    }
-
-    public Integer getAdditionalEveryOtherDays() {
-        return diseaseseednumber == null && additionaldiseasedaysnum == null ? null : this.additionaldiseasedays;
-    }
-
-    public Integer getAdditionalDiseaseSeedNumber() {
-        if (this.additionaldiseasedays == null) {
-            return null;
-        } else {
-            return this.additionaldiseasedaysnum == null ? this.diseaseseednumber : this.additionaldiseasedaysnum;
-        }
     }
 
     public static File findFile(File f) throws FileNotFoundException {

@@ -1,14 +1,16 @@
 package main.java.nl.uu.iss.ga.util.config;
 
 import main.java.nl.uu.iss.ga.model.data.Activity;
+import main.java.nl.uu.iss.ga.model.data.ActivityChain;
 import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
+import main.java.nl.uu.iss.ga.model.data.TripChain;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
+import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import main.java.nl.uu.iss.ga.model.reader.*;
 import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.LocationHistoryContext;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.EnvironmentTriggerPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.util.tracking.ActivityTypeTracker;
@@ -34,7 +36,6 @@ public class ConfigModel {
 
     private Random random;
     private final List<AgentID> agents = new ArrayList<>();
-    private List<File> householdVotingAssignmentsFiles = null;
     private final List<File> activityFiles;
     private final List<File> householdFiles;
     private final List<File> personFiles;
@@ -44,7 +45,7 @@ public class ConfigModel {
 
     private HouseholdReader householdReader;
     private PersonReader personReader;
-    private LocationFileReader locationFileReader;
+    //private LocationFileReader locationFileReader;
     private ActivityFileReader activityFileReader;
 
     private final ArgParse arguments;
@@ -57,12 +58,6 @@ public class ConfigModel {
         this.name = name;
         this.table = table;
 
-        if(this.householdVotingAssignmentsFiles == null && this.table.contains("householdVotingAssignments")) {
-            this.householdVotingAssignmentsFiles = getFiles("householdVotingAssignments", false);
-        } else if (this.householdVotingAssignmentsFiles != null && this.table.contains("householdVotingAssignments")) {
-            LOGGER.warning("Household voting assignment specified on both the county and system level. " +
-                    "Ignoring county level specification, and using system level only.");
-        }
         this.activityFiles = getFiles("activities", true);
         this.householdFiles = getFiles("households", true);
         this.personFiles = getFiles("persons", true);
@@ -87,33 +82,20 @@ public class ConfigModel {
                 this.random
         );
         this.personReader = new PersonReader(this.personFiles, this.householdReader.getHouseholds());
-        this.locationFileReader = new LocationFileReader(this.locationsFiles);
-        this.activityFileReader = new ActivityFileReader(this.activityFiles, this.locationFileReader);
-    }
-
-    public Callable<Void> getAsyncLoadFiles() {
-        return () -> {
-            loadFiles();
-            return null;
-        };
+        this.activityFileReader = new ActivityFileReader(this.activityFiles);
     }
 
     public void createAgents(Platform platform, EnvironmentInterface environmentInterface, ModeOfTransportTracker modeOfTransportTracker, ActivityTypeTracker activityTypeTracker) {
         for (ActivitySchedule schedule : this.activityFileReader.getActivitySchedules()) {
-            schedule.splitActivitiesByDay();
             createAgentFromSchedule(platform, environmentInterface, schedule, modeOfTransportTracker, activityTypeTracker);
         }
     }
     private void createAgentFromSchedule(Platform platform, EnvironmentInterface environmentInterface, ActivitySchedule schedule, ModeOfTransportTracker modeOfTransportTracker, ActivityTypeTracker activityTypeTracker) {
-         LocationEntry homeLocation = this.findHomeLocation(schedule);
+        BeliefContext beliefContext = new BeliefContext(environmentInterface, modeOfTransportTracker, activityTypeTracker);
 
-        LocationHistoryContext locationHistoryContext = new LocationHistoryContext();
-        BeliefContext beliefContext = new BeliefContext(environmentInterface, homeLocation, modeOfTransportTracker, activityTypeTracker);
-
-        AgentArguments<Activity> arguments = new AgentArguments<Activity>()
+        AgentArguments<TripChain> arguments = new AgentArguments<TripChain>()
                 .addContext(this.personReader.getPersons().get(schedule.getPerson()))
                 .addContext(schedule)
-                .addContext(locationHistoryContext)
                 .addContext(beliefContext)
                 .addContext(new DayPlanContext())
                 .addExternalTriggerPlanScheme(new EnvironmentTriggerPlanScheme())
@@ -122,26 +104,32 @@ public class ConfigModel {
             URI uri = new URI(null, String.format("agent-%04d", schedule.getPerson()),
                     platform.getHost(), platform.getPort(), null, null, null);
             AgentID aid = new AgentID(uri);
-            Agent<Activity> agent = new Agent<>(platform, arguments, aid);
-            for(Activity activity : schedule.getSchedule().values()) {
-                agent.adoptGoal(activity);
+            Agent<TripChain> agent = new Agent<>(platform, arguments, aid);
+
+            long pid = schedule.getPerson();
+            // loop into days of the week to split activities into each day
+            List<DayOfWeek> days = Arrays.asList(DayOfWeek.values());
+            for (DayOfWeek day: days){
+                ActivityChain activitiesChain = new ActivityChain();
+                activitiesChain.setDay(day);
+                activitiesChain.setPid(pid);
+                for(Activity activity : schedule.getSchedule().values()) {
+                    if(activity.getStartTime().getDayOfWeek().equals(day)) {
+                        activitiesChain.addActivity(activity);
+                    }
+                }
+                if(pid == 84) {
+                    System.out.println("ConfigModel");
+                    System.out.println(day + " - " + activitiesChain.getActivityChain().size());
+                }
+                agent.adoptGoal(activitiesChain);
             }
+
             this.agents.add(aid);
             beliefContext.setAgentID(aid);
         } catch (URISyntaxException e) {
             LOGGER.log(Level.SEVERE, "Failed to create AgentID for agent " + schedule.getPerson(), e);
         }
-    }
-
-    private LocationEntry findHomeLocation(ActivitySchedule schedule) {
-        for(Activity activity : schedule.getSchedule().values()) {
-            if(activity.getActivityType().equals(ActivityType.HOME)) {
-                activity.getLocation().setResidential(true);
-                return activity.getLocation();
-            }
-        }
-
-        return null;
     }
 
     private List<File> getFiles(String key, boolean required) throws Exception {
@@ -220,9 +208,6 @@ public class ConfigModel {
         return personReader;
     }
 
-    public LocationFileReader getLocationFileReader() {
-        return locationFileReader;
-    }
 
     public ActivityFileReader getActivityFileReader() {
         return activityFileReader;
