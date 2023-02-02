@@ -4,14 +4,10 @@ import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.ActivityChain;
 import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
 import main.java.nl.uu.iss.ga.model.data.TripChain;
-import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
-import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import main.java.nl.uu.iss.ga.model.reader.*;
 import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.DayPlanContext;
-import main.java.nl.uu.iss.ga.simulation.agent.planscheme.EnvironmentTriggerPlanScheme;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.util.tracking.ActivityTypeTracker;
 import main.java.nl.uu.iss.ga.util.tracking.ModeOfTransportTracker;
@@ -45,7 +41,6 @@ public class ConfigModel {
 
     private HouseholdReader householdReader;
     private PersonReader personReader;
-    //private LocationFileReader locationFileReader;
     private ActivityFileReader activityFileReader;
 
     private final ArgParse arguments;
@@ -97,8 +92,6 @@ public class ConfigModel {
                 .addContext(this.personReader.getPersons().get(schedule.getPerson()))
                 .addContext(schedule)
                 .addContext(beliefContext)
-                .addContext(new DayPlanContext())
-                //.addExternalTriggerPlanScheme(new EnvironmentTriggerPlanScheme())
                 .addGoalPlanScheme(new GoalPlanScheme());
         try {
             URI uri = new URI(null, String.format("agent-%04d", schedule.getPerson()),
