@@ -30,7 +30,9 @@ public class GoalPlanScheme implements PlanScheme<TripChain> {
             // look for a plan only if the chain is about this new day
             if (context.getToday().equals(activityChain.getDay())) {
 
-                if (activityChain.getPid() == 84) {
+                return new ExecuteChainTripPlan(activityChain);
+
+/*                if (activityChain.getPid() == 84) {
                     LOGGER.log(Level.INFO,"GoalPlanScheme - " + activityChain.getDay() + " - " + activityChain.getActivityChain().size());
 
                     List <Activity> activities = activityChain.getActivityChain();
@@ -52,7 +54,7 @@ public class GoalPlanScheme implements PlanScheme<TripChain> {
                     }
 
                     return new ExecuteChainTripPlan(tripChain);
-                }
+                }*/
 
             }
 

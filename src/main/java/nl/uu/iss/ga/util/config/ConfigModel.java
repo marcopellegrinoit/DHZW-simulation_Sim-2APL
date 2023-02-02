@@ -109,11 +109,12 @@ public class ConfigModel {
                         activitiesChain.addActivity(activity);
                     }
                 }
+                agent.adoptGoal(activitiesChain);
+
                 if(pid == 84) {
                     System.out.println("ConfigModel");
                     System.out.println(day + " - " + activitiesChain.getActivityChain().size());
                 }
-                agent.adoptGoal(activitiesChain);
             }
 
             this.agents.add(aid);
