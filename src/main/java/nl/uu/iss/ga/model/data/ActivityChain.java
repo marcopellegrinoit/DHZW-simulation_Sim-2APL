@@ -17,16 +17,18 @@ import java.util.logging.Logger;
 public class ActivityChain extends Goal implements Cloneable {
     private static final Logger LOGGER = Logger.getLogger(Simulation.class.getName());
     private List<Activity> chain;
-    private DayOfWeek day;
-    private long pid;
+    private final DayOfWeek day;
+    private final long pid;
 
-    public ActivityChain() {
-        this.chain = new ArrayList<Activity>();
-    }
-    public ActivityChain(List<Activity> chain, DayOfWeek day, long pid) {
+    public ActivityChain(long pid, DayOfWeek day) {
         this.pid = pid;
         this.day = day;
         this.chain = new ArrayList<Activity>();
+    }
+    public ActivityChain(long pid, DayOfWeek day, List<Activity> chain) {
+        this.pid = pid;
+        this.day = day;
+        this.chain = chain;
     }
 
     @Override
@@ -47,12 +49,7 @@ public class ActivityChain extends Goal implements Cloneable {
 
     @Override
     public ActivityChain clone() {
-        ActivityChain activityChain = new ActivityChain(this.chain, this.day, this.pid);
-        return activityChain;
-    }
-
-    public void setChain(List<Activity> chain) {
-        this.chain = chain;
+        return new ActivityChain(this.pid, this.day, this.chain);
     }
 
     public void addActivity(Activity activity) {
@@ -60,12 +57,6 @@ public class ActivityChain extends Goal implements Cloneable {
     }
 
     public List<Activity> getActivityChain() {return this.chain;}
-    public void setDay(DayOfWeek day){
-        this.day = day;
-    }
-    public void setPid(long pid){
-        this.pid = pid;
-    }
     public DayOfWeek getDay() {return this.day;}
     public long getPid() {return this.pid;}
 }

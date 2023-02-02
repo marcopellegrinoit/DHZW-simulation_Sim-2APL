@@ -98,7 +98,7 @@ public class ConfigModel {
                 .addContext(schedule)
                 .addContext(beliefContext)
                 .addContext(new DayPlanContext())
-                .addExternalTriggerPlanScheme(new EnvironmentTriggerPlanScheme())
+                //.addExternalTriggerPlanScheme(new EnvironmentTriggerPlanScheme())
                 .addGoalPlanScheme(new GoalPlanScheme());
         try {
             URI uri = new URI(null, String.format("agent-%04d", schedule.getPerson()),
@@ -107,12 +107,10 @@ public class ConfigModel {
             Agent<TripChain> agent = new Agent<>(platform, arguments, aid);
 
             long pid = schedule.getPerson();
+
             // loop into days of the week to split activities into each day
-            List<DayOfWeek> days = Arrays.asList(DayOfWeek.values());
-            for (DayOfWeek day: days){
-                ActivityChain activitiesChain = new ActivityChain();
-                activitiesChain.setDay(day);
-                activitiesChain.setPid(pid);
+            for (DayOfWeek day: DayOfWeek.values()){
+               ActivityChain activitiesChain = new ActivityChain(pid, day);
                 for(Activity activity : schedule.getSchedule().values()) {
                     if(activity.getStartTime().getDayOfWeek().equals(day)) {
                         activitiesChain.addActivity(activity);

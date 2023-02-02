@@ -5,20 +5,17 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 
 public class Trip {
     private TransportMode transportMode;
-    private boolean personWasDriver;
-    private boolean personWasPassenger;
+    private boolean personDriver;
+    private boolean personPassenger;
     private final long pid;
     private final long hid;
     private final ActivityType arrivalActivityType;
     private final String departurePC4;
     private final String arrivalPC4;
-
     private ActivityTime departureTime;
-
     private ActivityTime arrivalTime;
     private final ActivityTime previousActivityTime;
     private final ActivityTime nextActivityTime;
-
 
 
     public Trip(long pid, long hid, ActivityType arrivalActivityType, String departurePC4, String arrivalPC4, ActivityTime previousActivityTime, ActivityTime nextActivityTime) {
@@ -31,34 +28,28 @@ public class Trip {
         this.nextActivityTime = nextActivityTime;
     }
 
-    public boolean isPersonWasPassenger() {
-        return this.personWasPassenger;
-    }
-
-
     public String toString() {
         return "TripActivity{" +
                 "transportMode=" + transportMode +
-                ", personWasDriver=" + personWasDriver +
-                ", personWasPassenger=" + personWasPassenger +
                 '}';
     }
 
+    // region getter and setter
+
     public ActivityType getArrivalActivityType() {
-        return arrivalActivityType;
+        return this.arrivalActivityType;
     }
 
-
     public ActivityTime getPreviousActivityTime() {
-        return previousActivityTime;
+        return this.previousActivityTime;
     }
 
     public ActivityTime getNextActivityTime() {
-        return nextActivityTime;
+        return this.nextActivityTime;
     }
 
     public ActivityTime getDepartureTime() {
-        return departureTime;
+        return this.departureTime;
     }
 
     public void setDepartureTime(ActivityTime departureTime) {
@@ -66,10 +57,47 @@ public class Trip {
     }
 
     public ActivityTime getArrivalTime() {
-        return arrivalTime;
+        return this.arrivalTime;
     }
 
     public void setArrivalTime(ActivityTime arrivalTime) {
         this.arrivalTime = arrivalTime;
     }
+
+    public void setTransportMode(TransportMode transportMode) {
+        this.transportMode = transportMode;
+    }
+
+    public boolean isPersonDriver() {
+        return this.personDriver;
+    }
+
+    public void setPersonDriver(boolean personDriver) {
+        this.personDriver = personDriver;
+    }
+
+    public void setPersonPassenger(boolean personPassenger) {
+        this.personPassenger = personPassenger;
+    }
+    public boolean isPersonPassenger() {
+        return this.personPassenger;
+    }
+
+    public long getPid() {
+        return this.pid;
+    }
+
+    public long getHid() {
+        return this.hid;
+    }
+
+    public String getDeparturePC4() {
+        return this.departurePC4;
+    }
+
+    public String getArrivalPC4() {
+        return this.arrivalPC4;
+    }
+
+    // endregion getter and setter
 }
