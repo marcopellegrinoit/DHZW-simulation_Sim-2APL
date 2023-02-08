@@ -3,12 +3,12 @@ package main.java.nl.uu.iss.ga.model.data.dictionary;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.StringCodeTypeInterface;
 
 public enum TransportMode implements StringCodeTypeInterface {
-    PRIVATE_MOTORISED_VEHICLE("private motorised vehicle"),
-    BICYCLE("bike"),
-    TRAM("tram"),
-    BUS("bus"),
+    CAR_DRIVER("car_driver"),
+    CAR_PASSENGER("car_passenger"),
+    BIKE("bike"),
+    BUS_TRAM("bus_tram"),
     TRAIN("train"),
-    FOOT("foot");
+    WALK("walk");
 
     private final int code;
     private final String stringCode;

@@ -6,6 +6,8 @@ import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.PlanToAgentInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.builtin.RunOncePlan;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,55 +31,51 @@ public class ExecuteChainTripPlan extends RunOncePlan<TripChain> {
     public TripChain executeOnce(PlanToAgentInterface<TripChain> planToAgentInterface) {
         Person person = planToAgentInterface.getContext(Person.class);
 
-        if (activityChain.getPid() == 84) {
-            LOGGER.log(Level.INFO, "GoalPlanScheme - " + activityChain.getDay() + " - " + activityChain.getActivityChain().size());
-        }
-
         List<Activity> activities = activityChain.getActivityChain();
 
         this.tripChain = new TripChain(activityChain.getPid(), activityChain.getDay());
 
         Activity activityOrigin = activities.get(0);
+
+        if (person.getPid() == 34271) {
+            LOGGER.log(Level.INFO,"ExecuteSchedulesActivityPlan - " + person.getPid() + " - " + activities.size());
+        }
+
+
         for (Activity activityDestination : activities.subList(1, activities.size())) {
+            TransportMode transportMode = null;
 
-            // decide time and modal choice
-            ActivityTime departureTime = new ActivityTime(0);
-            ActivityTime arrivalTime = new ActivityTime(0);
+            int tripDurationSeconds = 20;
 
-            TransportMode transportMode;
 
-            // some stupid differentiation to see if works
-            if (activityOrigin.getStartTime().getSeconds() == 0) {
-                transportMode = TransportMode.BUS;
-            } else {
-                transportMode = TransportMode.BICYCLE;
-            }
+            ActivityTime departureTime = new ActivityTime(activityDestination.getStartTime().getSeconds() - tripDurationSeconds);
 
             // add the trip to the chain
             this.tripChain.addTrip(new Trip(activityOrigin.getPid(),
                                     activityOrigin.getHid(),
+                                    activityOrigin.getActivityType(),
                                     activityDestination.getActivityType(),
                                     activityOrigin.getLocation().getPc4(),
                                     activityDestination.getLocation().getPc4(),
                                     activityOrigin.getStartTime(),
                                     activityDestination.getStartTime(),
                                     departureTime,
-                                    arrivalTime,
+                                    activityDestination.getStartTime(), // the trip arrives when the next activity starts
                                     transportMode
             ));
             activityOrigin = activityDestination; // update past activity
         }
 
-        if (person.getPid() == 84) {
-            LOGGER.log(Level.INFO,"ExecuteSchedulesActivityPlan - " + person.getPid() + " - " + this.tripChain.getTripChain().size());
+        if (person.getPid() == 45049) {
+            LOGGER.log(Level.INFO,"ExecuteSchedulesActivityPlan - " + person.getPid());
+
+            // just for printing for each trip in the chain
+            for (Trip trip : this.tripChain.getTripChain()) {
+                LOGGER.log(Level.INFO,trip.getDepartureActivityType() +"("+ trip.getPreviousActivityTime() + ") -> " + trip.getArrivalActivityType() +"("+ trip.getNextActivityTime() + ") - " + trip.getTransportMode().getStringCode());
+            }
+
         }
 
-        // just for printing for each trip in the chain
-        for (Trip trip : this.tripChain.getTripChain()) {
-            if (person.getPid() == 84) {
-                LOGGER.log(Level.INFO,trip.getPreviousActivityTime() + " - " + trip.getNextActivityTime() + " - " + trip.getTransportMode().getStringCode());
-            }
-        }
 
         return this.tripChain;
     }

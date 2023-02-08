@@ -25,41 +25,14 @@ public class GoalPlanScheme implements PlanScheme<TripChain> {
 
         // for each activity in the weekly activity schedule
         if (trigger instanceof ActivityChain) {
+
             ActivityChain activityChain = (ActivityChain) trigger;
 
             // look for a plan only if the chain is about this new day
             if (context.getToday().equals(activityChain.getDay())) {
-
                 return new ExecuteChainTripPlan(activityChain);
-
-/*                if (activityChain.getPid() == 84) {
-                    LOGGER.log(Level.INFO,"GoalPlanScheme - " + activityChain.getDay() + " - " + activityChain.getActivityChain().size());
-
-                    List <Activity> activities = activityChain.getActivityChain();
-
-                    // Instantiate new empty chain of trips
-                    TripChain tripChain = new TripChain(activityChain.getPid(), activityChain.getDay());
-
-                    Activity activityOrigin = activities.get(0);
-                    for (Activity activityDestination : activities.subList(1, activities.size())) {
-                        tripChain.addTrip(new Trip(activityOrigin.getPid(),
-                                                    activityOrigin.getHid(),
-                                                    activityDestination.getActivityType(),
-                                                    activityOrigin.getLocation().getPc4(),
-                                                    activityDestination.getLocation().getPc4(),
-                                                    activityOrigin.getStartTime(),
-                                                    activityDestination.getStartTime()
-                        ));
-                        activityOrigin = activityDestination; // update past activity
-                    }
-
-                    return new ExecuteChainTripPlan(tripChain);
-                }*/
-
             }
-
         }
-
 
         return Plan.UNINSTANTIATED();
     }

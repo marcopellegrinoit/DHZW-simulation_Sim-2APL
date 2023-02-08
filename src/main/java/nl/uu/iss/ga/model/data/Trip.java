@@ -9,6 +9,8 @@ public class Trip {
     private boolean personPassenger;
     private final long pid;
     private final long hid;
+    private final ActivityType departureActivityType;
+
     private final ActivityType arrivalActivityType;
     private final String departurePC4;
     private final String arrivalPC4;
@@ -18,9 +20,10 @@ public class Trip {
     private final ActivityTime nextActivityTime;
 
 
-    public Trip(long pid, long hid, ActivityType arrivalActivityType, String departurePC4, String arrivalPC4, ActivityTime previousActivityTime, ActivityTime nextActivityTime, ActivityTime departureTime, ActivityTime arrivalTime, TransportMode transportMode) {
+    public Trip(long pid, long hid, ActivityType departureActivityType, ActivityType arrivalActivityType, String departurePC4, String arrivalPC4, ActivityTime previousActivityTime, ActivityTime nextActivityTime, ActivityTime departureTime, ActivityTime arrivalTime, TransportMode transportMode) {
         this.pid = pid;
         this.hid = hid;
+        this.departureActivityType = departureActivityType;
         this.arrivalActivityType = arrivalActivityType;
         this.departurePC4 = departurePC4;
         this.arrivalPC4 = arrivalPC4;
@@ -38,6 +41,10 @@ public class Trip {
     }
 
     // region getter and setter
+
+    public ActivityType getDepartureActivityType() {
+        return this.departureActivityType;
+    }
 
     public ActivityType getArrivalActivityType() {
         return this.arrivalActivityType;

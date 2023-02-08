@@ -4,6 +4,7 @@ import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.ActivityChain;
 import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
 import main.java.nl.uu.iss.ga.model.data.TripChain;
+import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.reader.*;
 import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
@@ -15,6 +16,7 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.Agent;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentArguments;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
+import org.javatuples.Tuple;
 import org.tomlj.TomlArray;
 import org.tomlj.TomlTable;
 
@@ -25,6 +27,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class ConfigModel {
 
@@ -102,18 +105,29 @@ public class ConfigModel {
             long pid = schedule.getPerson();
 
             // loop into days of the week to split activities into each day
-            for (DayOfWeek day: DayOfWeek.values()){
-               ActivityChain activitiesChain = new ActivityChain(pid, day);
-                for(Activity activity : schedule.getSchedule().values()) {
-                    if(activity.getStartTime().getDayOfWeek().equals(day)) {
-                        activitiesChain.addActivity(activity);
-                    }
-                }
-                agent.adoptGoal(activitiesChain);
+            for (DayOfWeek day: DayOfWeek.values()) {
+                // collect all activities of today
+                List <Activity> activitiesInDay = schedule.getSchedule().values().stream()
+                        .filter( c -> c.getStartTime().getDayOfWeek().equals(day))
+                        .collect(Collectors.toList());
 
-                if(pid == 84) {
-                    System.out.println("ConfigModel");
-                    System.out.println(day + " - " + activitiesChain.getActivityChain().size());
+                // there is a trip only if there are at least two activities
+                if(activitiesInDay.size()>1){
+                    // initialise the new chain
+                    ActivityChain activityChain = new ActivityChain(pid, day);
+                    activityChain.addActivity(activitiesInDay.get(0));
+
+                    // loop through all the activities of the day
+                    for (Activity nextActivity: activitiesInDay.subList(1, activitiesInDay.size())) {
+                        activityChain.addActivity(nextActivity);
+
+                        // if it comes back home the chain closes and start a new one
+                        if (nextActivity.getActivityType().equals(ActivityType.HOME)){
+                                agent.adoptGoal(activityChain);
+                                activityChain = new ActivityChain(pid, day);
+                                activityChain.addActivity(nextActivity);
+                            }
+                    }
                 }
             }
 
