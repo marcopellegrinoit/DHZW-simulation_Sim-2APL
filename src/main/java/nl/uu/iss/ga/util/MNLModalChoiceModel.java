@@ -39,14 +39,14 @@ public class MNLModalChoiceModel {
      * @param nChangesBus: number of changes if using the bus
      * @return a map of probability distribution over transport modes
      */
-    public HashMap<TransportMode, Double> TransportMode (HashMap<TransportMode, Integer> travelTimeSeconds, HashMap<TransportMode, Double> costs, int nChangesBus) {
+    public static HashMap<TransportMode, Double> getChoiceProbabilities (HashMap<TransportMode, Integer> travelTimeSeconds, HashMap<TransportMode, Double> costs, int nChangesBus, boolean carPossible, boolean bikePossible) {
         // probability distribution of transport modes
-        HashMap<TransportMode, Double> probDistribution = new HashMap<>();
+        HashMap<TransportMode, Double> choiceProbabilities = new HashMap<>();
 
-        double sumUtilitiesExp = 0;
+        double sumUtilitiesExp = 0.0;
         // estimate a utility for each transport mode
         for (TransportMode transportMode: TransportMode.values()){
-            double utility_i = 0;
+            double utility_i = 0.0;
 
             // can be optimized: walk + bike and car_driver + car_passenger
             switch (transportMode){
@@ -69,17 +69,20 @@ public class MNLModalChoiceModel {
                     break;
             }
 
-            double utilityExp_i = Math.pow(utility_i, 2);   // exponential of the utility
-            probDistribution.put(transportMode, utilityExp_i);  // save the exponential utility
-            sumUtilitiesExp = sumUtilitiesExp + utilityExp_i;  // update the sum of exponential utilities
+            // train must not be considered. car driver and bike must not be considered if such mode is not available
+            if (!(transportMode.equals(TransportMode.TRAIN) | (transportMode.equals(TransportMode.CAR_DRIVER) & !carPossible) | (transportMode.equals(TransportMode.BIKE) & !bikePossible))){
+                double utilityExp_i = Math.exp(utility_i);   // e^(utility)
+                choiceProbabilities.put(transportMode, utilityExp_i);  // save e^(utility)
+                sumUtilitiesExp += utilityExp_i;  // update the sum of e^(utility)
+            }
         }
 
         // update map by dividing the exponential utilities by their sum
-        for (TransportMode transportMode: probDistribution.keySet()){
-            probDistribution.put(transportMode, probDistribution.get(transportMode) / sumUtilitiesExp);
+        for (TransportMode transportMode: choiceProbabilities.keySet()){
+            choiceProbabilities.put(transportMode, choiceProbabilities.get(transportMode) / sumUtilitiesExp);
         }
 
-        return probDistribution;
+        return choiceProbabilities;
     }
 
 }
