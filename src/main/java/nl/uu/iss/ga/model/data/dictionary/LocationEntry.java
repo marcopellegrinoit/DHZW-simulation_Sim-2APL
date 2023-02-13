@@ -20,11 +20,11 @@ public class LocationEntry {
     private final ActivityTime startTime;
 
     // Actual location data
-    private final String lid;
-    private final double longitude;
-    private final double latitude;
-    private final String pc4;
-    private final String pc6;
+    private String lid;
+    private double longitude;
+    private double latitude;
+    private String pc4;
+    private String pc6;
 
 
     public LocationEntry(Long hid, Long pid, int activityNumber, ActivityType activityType, ActivityTime startTime, String lid, double longitude, double latitude, String pc4, String pc6) {
@@ -101,4 +101,20 @@ public class LocationEntry {
     public String getPc6() {
         return pc6;
     }
+
+    public boolean isInsideDHZW() {
+        return !this.lid.equals("outside_DHZW");
+    }
+
+    public void setToTrainStation(){
+        this.lid = "station_Moerwijk";
+        this.longitude = 52.01678596;
+        this.latitude = 4.30776639;
+        this.pc4 = "2532";
+        this.pc6 = "2532CP";
+    }
+    public boolean isTrainStation(){
+        return this.lid.equals("station_Moerwijk");
+    }
+
 }

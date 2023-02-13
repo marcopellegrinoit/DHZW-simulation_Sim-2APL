@@ -10,27 +10,30 @@ public class Trip {
     private final long pid;
     private final long hid;
     private final ActivityType departureActivityType;
-
     private final ActivityType arrivalActivityType;
     private final String departurePC4;
     private final String arrivalPC4;
-    private final ActivityTime departureTime;
-    private final ActivityTime arrivalTime;
-    private final ActivityTime previousActivityTime;
-    private final ActivityTime nextActivityTime;
+    private final String departureLid;
+    private final String arrivalLid;
+    private final ActivityTime previousActivityEndTime;
+    private final ActivityTime nextActivityStartTime;
+    private final int activityTimeGap;
+    private final int travelTime;
 
 
-    public Trip(long pid, long hid, ActivityType departureActivityType, ActivityType arrivalActivityType, String departurePC4, String arrivalPC4, ActivityTime previousActivityTime, ActivityTime nextActivityTime, ActivityTime departureTime, ActivityTime arrivalTime, TransportMode transportMode) {
+    public Trip(long pid, long hid, ActivityType departureActivityType, ActivityType arrivalActivityType, String departurePC4, String arrivalPC4, String departureLid, String arrivalLid, ActivityTime previousActivityEndTime, ActivityTime nextActivityStartTime, TransportMode transportMode, int travelTime) {
         this.pid = pid;
         this.hid = hid;
         this.departureActivityType = departureActivityType;
         this.arrivalActivityType = arrivalActivityType;
         this.departurePC4 = departurePC4;
         this.arrivalPC4 = arrivalPC4;
-        this.previousActivityTime = previousActivityTime;
-        this.nextActivityTime = nextActivityTime;
-        this.departureTime = departureTime;
-        this.arrivalTime = arrivalTime;
+        this.departureLid = departureLid;
+        this.arrivalLid = arrivalLid;
+        this.previousActivityEndTime = previousActivityEndTime;
+        this.nextActivityStartTime = nextActivityStartTime;
+        this.activityTimeGap = nextActivityStartTime.getSeconds() - previousActivityEndTime.getSeconds();
+        this.travelTime = travelTime;
         this.transportMode = transportMode;
     }
 
@@ -48,22 +51,6 @@ public class Trip {
 
     public ActivityType getArrivalActivityType() {
         return this.arrivalActivityType;
-    }
-
-    public ActivityTime getPreviousActivityTime() {
-        return this.previousActivityTime;
-    }
-
-    public ActivityTime getNextActivityTime() {
-        return this.nextActivityTime;
-    }
-
-    public ActivityTime getDepartureTime() {
-        return this.departureTime;
-    }
-
-    public ActivityTime getArrivalTime() {
-        return this.arrivalTime;
     }
 
     public boolean isPersonDriver() {
@@ -98,6 +85,30 @@ public class Trip {
     }
 
     public TransportMode getTransportMode() { return this.transportMode;}
+
+    public String getDepartureLid() {
+        return departureLid;
+    }
+
+    public String getArrivalLid() {
+        return arrivalLid;
+    }
+
+    public ActivityTime getPreviousActivityEndTime() {
+        return previousActivityEndTime;
+    }
+
+    public ActivityTime getNextActivityStartTime() {
+        return nextActivityStartTime;
+    }
+
+    public int getActivityTimeGap() {
+        return activityTimeGap;
+    }
+
+    public int getTravelTime() {
+        return travelTime;
+    }
 
     // endregion getter and setter
 }

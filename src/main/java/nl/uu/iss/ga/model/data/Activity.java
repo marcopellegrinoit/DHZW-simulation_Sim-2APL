@@ -18,14 +18,19 @@ public class Activity {
     private final int activityNumber;
     private final ActivityType activityType;
     private final ActivityTime startTime;
+    private final ActivityTime endTime;
+
+    private final int duration;
     private LocationEntry location;
 
-    public Activity(long pid, long hid, int activityNumber, ActivityType activityType, ActivityTime startTime) {
+    public Activity(long pid, long hid, int activityNumber, ActivityType activityType, ActivityTime startTime, int duration) {
         this.pid = pid;
         this.hid = hid;
         this.activityNumber = activityNumber;
         this.activityType = activityType;
         this.startTime = startTime;
+        this.duration = duration;
+        this.endTime = new ActivityTime(startTime.getSeconds()+duration);
     }
 
     public static Activity fromLine(Map<String, String> keyValue) {
@@ -34,8 +39,9 @@ public class Activity {
                 ParserUtil.parseAsLong(keyValue.get("hh_ID")),
                 ParserUtil.parseAsInt(keyValue.get("activity_number")),
                 StringCodeTypeInterface.parseAsEnum(ActivityType.class, keyValue.get("activity_type")),
-                new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time_seconds")))
-        );
+                new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time_seconds"))),
+                ParserUtil.parseAsInt(keyValue.get("duration_seconds"))
+                );
     }
 
     public String toString() {
@@ -73,4 +79,11 @@ public class Activity {
         this.location = location;
     }
 
+    public int getDuration() {
+        return duration;
+    }
+
+    public ActivityTime getEndTime() {
+        return endTime;
+    }
 }
