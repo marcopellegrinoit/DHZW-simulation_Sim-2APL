@@ -89,8 +89,8 @@ public class LocationEntry {
                 keyValue.get("lid"),
                 ParserUtil.parseAsDouble(keyValue.get("longitude")),
                 ParserUtil.parseAsDouble(keyValue.get("latitude")),
-                keyValue.get("pc4"),
-                keyValue.get("pc6")
+                keyValue.get("PC4"),
+                keyValue.get("PC6")
         );
     }
 

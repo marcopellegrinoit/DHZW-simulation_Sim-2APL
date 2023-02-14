@@ -1,9 +1,9 @@
 package main.java.nl.uu.iss.ga.util.config;
 
 import main.java.nl.uu.iss.ga.model.data.Activity;
-import main.java.nl.uu.iss.ga.model.data.ActivityChain;
+import main.java.nl.uu.iss.ga.model.data.ActivityTour;
 import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
-import main.java.nl.uu.iss.ga.model.data.TripChain;
+import main.java.nl.uu.iss.ga.model.data.TripTour;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.reader.*;
@@ -16,7 +16,6 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.Agent;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentArguments;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
-import org.javatuples.Tuple;
 import org.tomlj.TomlArray;
 import org.tomlj.TomlTable;
 
@@ -24,7 +23,6 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -91,7 +89,7 @@ public class ConfigModel {
     private void createAgentFromSchedule(Platform platform, EnvironmentInterface environmentInterface, ActivitySchedule schedule, ModeOfTransportTracker modeOfTransportTracker, ActivityTypeTracker activityTypeTracker) {
         BeliefContext beliefContext = new BeliefContext(environmentInterface, modeOfTransportTracker, activityTypeTracker);
 
-        AgentArguments<TripChain> arguments = new AgentArguments<TripChain>()
+        AgentArguments<TripTour> arguments = new AgentArguments<TripTour>()
                 .addContext(this.personReader.getPersons().get(schedule.getPerson()))
                 .addContext(schedule)
                 .addContext(beliefContext)
@@ -100,7 +98,7 @@ public class ConfigModel {
             URI uri = new URI(null, String.format("agent-%04d", schedule.getPerson()),
                     platform.getHost(), platform.getPort(), null, null, null);
             AgentID aid = new AgentID(uri);
-            Agent<TripChain> agent = new Agent<>(platform, arguments, aid);
+            Agent<TripTour> agent = new Agent<>(platform, arguments, aid);
 
             long pid = schedule.getPerson();
 
@@ -114,18 +112,18 @@ public class ConfigModel {
                 // there is a trip only if there are at least two activities
                 if(activitiesInDay.size()>1){
                     // initialise the new chain
-                    ActivityChain activityChain = new ActivityChain(pid, day);
-                    activityChain.addActivity(activitiesInDay.get(0));
+                    ActivityTour activityTour = new ActivityTour(pid, day);
+                    activityTour.addActivity(activitiesInDay.get(0));
 
                     // loop through all the activities of the day
                     for (Activity nextActivity: activitiesInDay.subList(1, activitiesInDay.size())) {
-                        activityChain.addActivity(nextActivity);
+                        activityTour.addActivity(nextActivity);
 
-                        // if it comes back home the chain closes and start a new one
+                        // if it comes back home the tour closes and start a new one
                         if (nextActivity.getActivityType().equals(ActivityType.HOME)){
-                                agent.adoptGoal(activityChain);
-                                activityChain = new ActivityChain(pid, day);
-                                activityChain.addActivity(nextActivity);
+                                agent.adoptGoal(activityTour);
+                                activityTour = new ActivityTour(pid, day);
+                                activityTour.addActivity(nextActivity);
                             }
                     }
                 }

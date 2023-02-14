@@ -9,21 +9,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class TripChain extends Goal implements Cloneable {
+public class ActivityTour extends Goal implements Cloneable {
     private static final Logger LOGGER = Logger.getLogger(Simulation.class.getName());
-    private List<Trip> chain;
+    private List<Activity> tour;
     private final DayOfWeek day;
     private final long pid;
 
-    public TripChain(long pid, DayOfWeek day, List<Trip> chain) {
+    public ActivityTour(long pid, DayOfWeek day) {
         this.pid = pid;
         this.day = day;
-        this.chain = chain;
+        this.tour = new ArrayList<Activity>();
     }
-    public TripChain(long pid, DayOfWeek day) {
+    public ActivityTour(long pid, DayOfWeek day, List<Activity> tour) {
         this.pid = pid;
         this.day = day;
-        this.chain = new ArrayList<Trip>();
+        this.tour = tour;
     }
 
     @Override
@@ -38,21 +38,20 @@ public class TripChain extends Goal implements Cloneable {
 
         return String.format(
                 "%s (%s) %s - %s",
-                this.chain
+                this.tour
         );
     }
 
     @Override
-    public TripChain clone() {
-        TripChain tripChain = new TripChain(this.pid, this.day, this.chain);
-        return tripChain;
+    public ActivityTour clone() {
+        return new ActivityTour(this.pid, this.day, this.tour);
     }
 
-    public void addTrip(Trip trip) {
-        this.chain.add(trip);
+    public void addActivity(Activity activity) {
+        this.tour.add(activity);
     }
 
-    public List<Trip> getTripChain() {return this.chain;}
+    public List<Activity> getActivityTour() {return this.tour;}
     public DayOfWeek getDay() {return this.day;}
     public long getPid() {return this.pid;}
 }

@@ -3,8 +3,9 @@ package main.java.nl.uu.iss.ga.model.data;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 
+import java.util.logging.Level;
+
 public class Trip {
-    private final TransportMode transportMode;
     private boolean personDriver;
     private boolean personPassenger;
     private final long pid;
@@ -15,13 +16,13 @@ public class Trip {
     private final String arrivalPC4;
     private final String departureLid;
     private final String arrivalLid;
+    private final ActivityTime previousActivityStartTime;
+
     private final ActivityTime previousActivityEndTime;
     private final ActivityTime nextActivityStartTime;
     private final int activityTimeGap;
-    private final int travelTime;
 
-
-    public Trip(long pid, long hid, ActivityType departureActivityType, ActivityType arrivalActivityType, String departurePC4, String arrivalPC4, String departureLid, String arrivalLid, ActivityTime previousActivityEndTime, ActivityTime nextActivityStartTime, TransportMode transportMode, int travelTime) {
+    public Trip(long pid, long hid, ActivityType departureActivityType, ActivityType arrivalActivityType, String departurePC4, String arrivalPC4, String departureLid, String arrivalLid, ActivityTime previousActivityStartTime, ActivityTime previousActivityEndTime, ActivityTime nextActivityStartTime) {
         this.pid = pid;
         this.hid = hid;
         this.departureActivityType = departureActivityType;
@@ -30,18 +31,25 @@ public class Trip {
         this.arrivalPC4 = arrivalPC4;
         this.departureLid = departureLid;
         this.arrivalLid = arrivalLid;
+        this.previousActivityStartTime = previousActivityStartTime;
         this.previousActivityEndTime = previousActivityEndTime;
         this.nextActivityStartTime = nextActivityStartTime;
         this.activityTimeGap = nextActivityStartTime.getSeconds() - previousActivityEndTime.getSeconds();
-        this.travelTime = travelTime;
-        this.transportMode = transportMode;
     }
 
     public String toString() {
-        return "TripActivity{" +
-                "transportMode=" + transportMode +
-                '}';
+        return "Trip{" +
+                "origin_Activity = " + departureActivityType +
+                ", origin_id = " +departureLid +
+                " (" + previousActivityStartTime +
+                " - " + previousActivityEndTime +
+                ") --> " +
+                "origin_Activity = " + arrivalActivityType +
+                ", origin_id = " + arrivalLid +
+                " (starts at " + nextActivityStartTime +
+                ")}";
     }
+
 
     // region getter and setter
 
@@ -84,8 +92,6 @@ public class Trip {
         return this.arrivalPC4;
     }
 
-    public TransportMode getTransportMode() { return this.transportMode;}
-
     public String getDepartureLid() {
         return departureLid;
     }
@@ -104,10 +110,6 @@ public class Trip {
 
     public int getActivityTimeGap() {
         return activityTimeGap;
-    }
-
-    public int getTravelTime() {
-        return travelTime;
     }
 
     // endregion getter and setter
