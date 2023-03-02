@@ -1,11 +1,24 @@
 package main.java.nl.uu.iss.ga.simulation.agent.plan.activity;
 
 import main.java.nl.uu.iss.ga.model.data.*;
+import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 
 import nl.uu.cs.iss.ga.sim2apl.core.agent.PlanToAgentInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.builtin.RunOncePlan;
 
+import org.json.JSONObject;
+import org.rosuda.JRI.Rengine;
+import org.rosuda.JRI.REXP;
+
+import javax.xml.stream.Location;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -17,7 +30,6 @@ import static main.java.nl.uu.iss.ga.util.OutsideTripsDistribution.getOutsideTri
 
 public class ExecuteTourPlan extends RunOncePlan<TripTour> {
     private static final Logger LOGGER = Logger.getLogger(ExecuteTourPlan.class.getName());
-
     private final ActivityTour activityTour;
     private TripTour tripTour;
     private HashMap<TransportMode, Integer> travelTimeSeconds;
@@ -55,6 +67,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
         Person person = planToAgentInterface.getContext(Person.class);
         boolean carPossible = person.hasCarLicense() & person.getHousehold().hasCarOwnership();
 
+
         // create the trip tour from the activity tour
         this.generateTripTour(activityTour);
 
@@ -83,7 +96,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
      * The function instantiate tripTour with the given tour/chain of activities
      * @param activityTour: chain of activities
      */
-    private void generateTripTour(ActivityTour activityTour){
+    private void generateTripTour(ActivityTour activityTour) {
         // ------------------------------------------------------------------------------
 
         List<Activity> activities = activityTour.getActivityTour();
@@ -102,12 +115,14 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
             if (activityOrigin.getLocation().isInsideDHZW() & activityDestination.getLocation().isInsideDHZW()) {
                 // entirely inside DHZW
 
-                // todo: update compute here the time of the trip per each modal choice
+                calculateTravelTimes(activityOrigin.getLocation(), activityDestination.getLocation(), activityDestination.getStartTime());
+
+                /*// todo: update compute here the time of the trip per each modal choice
                 this.travelTimeSeconds.put(TransportMode.WALK, this.travelTimeSeconds.get(TransportMode.WALK) + 45);
                 this.travelTimeSeconds.put(TransportMode.BIKE, this.travelTimeSeconds.get(TransportMode.WALK) + 30);
                 this.travelTimeSeconds.put(TransportMode.CAR_DRIVER, this.travelTimeSeconds.get(TransportMode.WALK) + 15);
                 this.travelTimeSeconds.put(TransportMode.CAR_PASSENGER, this.travelTimeSeconds.get(TransportMode.WALK) + 15);
-                this.travelTimeSeconds.put(TransportMode.BUS_TRAM, this.travelTimeSeconds.get(TransportMode.WALK) + 25);
+                this.travelTimeSeconds.put(TransportMode.BUS_TRAM, this.travelTimeSeconds.get(TransportMode.WALK) + 25);*/
 
                 tripInDHZW = true;
 
@@ -178,6 +193,72 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
             // update past activity
             activityOrigin = activityDestination;
         }
+    }
+
+    private void calculateTravelTimes (LocationEntry departure, LocationEntry arrival, ActivityTime arrivalTime) {
+        // fixed flags
+        String otpBaseUrl = "http://localhost:8801/otp/routers/default/";
+        String date = "01/01/2019";
+        int numberResults = 1 ;
+        boolean arriveBy = true;
+
+        String fromPoint = departure.getLatitude() +","+ departure.getLongitude();
+        String toPoint = arrival.getLatitude() +","+ arrival.getLongitude();
+        String time = arrivalTime.getHour_of_day() + ":" + arrivalTime.getMinute_of_hour();
+
+        // create the full query
+        String otpUrl = otpBaseUrl + "plan?fromPlace=" + fromPoint + "&toPlace=" + toPoint + "&date=" + date + "&time=" + time + "&arriveBy=" + arriveBy + "&numItineraries=" + numberResults;
+
+        travelTimeSeconds.put(TransportMode.WALK, travelTimeSeconds.get(TransportMode.WALK) + getTravelTime(otpUrl, "WALK"));
+        travelTimeSeconds.put(TransportMode.BIKE, travelTimeSeconds.get(TransportMode.BIKE) + getTravelTime(otpUrl, "BICYCLE"));
+        int carTravelTime = getTravelTime(otpUrl, "CAR");
+        travelTimeSeconds.put(TransportMode.CAR_DRIVER, travelTimeSeconds.get(TransportMode.CAR_DRIVER) + carTravelTime);
+        travelTimeSeconds.put(TransportMode.CAR_PASSENGER, travelTimeSeconds.get(TransportMode.CAR_PASSENGER) + carTravelTime);
+        travelTimeSeconds.put(TransportMode.BUS_TRAM, travelTimeSeconds.get(TransportMode.BUS_TRAM) + getTravelTime(otpUrl, "BUS"));
+    }
+
+    private int getTravelTime(String otpUrl, String mode){
+        String query = otpUrl + "&mode=" + mode;
+        System.out.println(query);
+
+        int travelTime = 0;
+        // Send a GET request to the OTP server
+        try {
+            URL url = new URL(query);
+
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Read the response from the OTP server
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String line;
+            StringBuffer response = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
+
+            JSONObject jsonResponse = new JSONObject(response.toString());
+
+            // Get the first itinerary from the response
+            JSONObject itinerary = jsonResponse.getJSONObject("plan").getJSONArray("itineraries").getJSONObject(0);
+
+            // Get the duration of the itinerary in seconds
+            travelTime = itinerary.getInt("duration"); // seconds
+
+            // Print the response from the OTP server
+            System.out.println(mode + ": " + response);
+
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        } catch (ProtocolException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println(travelTime);
+        return travelTime;
     }
 
 

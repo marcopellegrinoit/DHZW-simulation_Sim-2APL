@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 public class ActivityFileReader {
 
     private static final Logger LOGGER = Logger.getLogger(ActivityFileReader.class.getName());
