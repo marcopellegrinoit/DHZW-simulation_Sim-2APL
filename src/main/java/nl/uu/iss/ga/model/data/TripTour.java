@@ -15,8 +15,6 @@ public class TripTour extends Goal implements Cloneable {
     private List<Trip> chain;
     private final DayOfWeek day;
     private final long pid;
-    private TransportMode transportMode;
-    private int travelTime;
 
     public TripTour(long pid, DayOfWeek day, List<Trip> chain) {
         this.pid = pid;
@@ -43,9 +41,7 @@ public class TripTour extends Goal implements Cloneable {
                 output = output + trip.toString() + "\n";
             }
         }
-        output = output + "}\n"+
-                "Modal choice = " + transportMode + "\n" +
-                "Travel time = " + travelTime +"]";
+
         return output;
     }
 
@@ -63,19 +59,4 @@ public class TripTour extends Goal implements Cloneable {
     public DayOfWeek getDay() {return this.day;}
     public long getPid() {return this.pid;}
 
-    public TransportMode getTransportMode() {
-        return transportMode;
-    }
-
-    public void setTransportMode(TransportMode transportMode) {
-        this.transportMode = transportMode;
-    }
-
-    public int getTravelTime() {
-        return travelTime;
-    }
-
-    public void setTravelTime(int travelTime) {
-        this.travelTime = travelTime;
-    }
 }

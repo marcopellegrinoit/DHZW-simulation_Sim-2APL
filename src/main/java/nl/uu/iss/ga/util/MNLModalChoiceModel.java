@@ -34,12 +34,12 @@ public class MNLModalChoiceModel {
     }
 
     /**
-     * @param travelTimeSeconds: map of trip duration with such transport mode
+     * @param travelTimes: map of trip duration with such transport mode
      * @param costs: map of costs with such transport mode
      * @param nChangesBus: number of changes if using the bus
      * @return a map of probability distribution over transport modes
      */
-    public static HashMap<TransportMode, Double> getChoiceProbabilities (HashMap<TransportMode, Integer> travelTimeSeconds, HashMap<TransportMode, Double> costs, int nChangesBus, boolean carPossible) {
+    public static HashMap<TransportMode, Double> getChoiceProbabilities (HashMap<TransportMode, Integer> travelTimes, HashMap<TransportMode, Double> costs, int nChangesBus, boolean carPossible, boolean trainPossible, boolean busTramPossible) {
         // probability distribution of transport modes
         HashMap<TransportMode, Double> choiceProbabilities = new HashMap<>();
 
@@ -51,26 +51,29 @@ public class MNLModalChoiceModel {
             // can be optimized: walk + bike and car_driver + car_passenger
             switch (transportMode){
                 case WALK:
-                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimeSeconds.get(transportMode);
+                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimes.get(transportMode);
                     break;
                 case BIKE:
-                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimeSeconds.get(transportMode);
+                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimes.get(transportMode);
                     break;
                 case CAR_DRIVER:
-                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimeSeconds.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode);
+                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimes.get(TransportMode.CAR) + betaCost.get(transportMode) * costs.get(transportMode);
                     break;
                 case CAR_PASSENGER:
-                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimeSeconds.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode);
+                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimes.get(TransportMode.CAR) + betaCost.get(transportMode) * costs.get(transportMode);
                     break;
                 case BUS_TRAM:
-                    utility_i = alpha.get(transportMode) + betaTimeWalkBus * travelTimeSeconds.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode) + betaChangesBus * nChangesBus;
+                    utility_i = alpha.get(transportMode) + betaTimeWalkBus * travelTimes.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode) + betaChangesBus * nChangesBus;
+                    break;
+                case TRAIN:
+                    utility_i = alpha.get(transportMode) + betaTimeWalkBus * travelTimes.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode) + betaChangesBus * nChangesBus;
                     break;
                 default:
                     break;
             }
 
-            // train must not be considered. car driver and bike must not be considered if such mode is not available
-            if (!(transportMode.equals(TransportMode.TRAIN) | (transportMode.equals(TransportMode.CAR_DRIVER) & !carPossible))){
+            // compute probability choices for the modes available. walk, bike and car passenger are always available
+            if (!((transportMode.equals(TransportMode.TRAIN) & !trainPossible) | (transportMode.equals(TransportMode.BUS_TRAM) & !busTramPossible) | (transportMode.equals(TransportMode.CAR_DRIVER) & !carPossible))){
                 double utilityExp_i = Math.exp(utility_i);   // e^(utility)
                 choiceProbabilities.put(transportMode, utilityExp_i);  // save e^(utility)
                 sumUtilitiesExp += utilityExp_i;  // update the sum of e^(utility)

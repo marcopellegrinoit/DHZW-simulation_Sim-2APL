@@ -4,35 +4,34 @@ import main.java.nl.uu.iss.ga.model.data.*;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 
+import main.java.nl.uu.iss.ga.util.CumulativeDistribution;
+import main.java.nl.uu.iss.ga.util.MNLModalChoiceModel;
+import main.java.nl.uu.iss.ga.util.SortBasedOnMessageId;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.PlanToAgentInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.builtin.RunOncePlan;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
-import org.rosuda.JRI.Rengine;
-import org.rosuda.JRI.REXP;
 
-import javax.xml.stream.Location;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static main.java.nl.uu.iss.ga.util.CumulativeDistribution.sampleWithCumulativeDistribution;
-import static main.java.nl.uu.iss.ga.util.MNLModalChoiceModel.getChoiceProbabilities;
-import static main.java.nl.uu.iss.ga.util.OutsideTripsDistribution.getOutsideTripsDistribution;
 
 public class ExecuteTourPlan extends RunOncePlan<TripTour> {
     private static final Logger LOGGER = Logger.getLogger(ExecuteTourPlan.class.getName());
     private final ActivityTour activityTour;
     private TripTour tripTour;
-    private HashMap<TransportMode, Integer> travelTimeSeconds;
+    private HashMap<TransportMode, Integer> travelTimes;
+    private HashMap<TransportMode, Integer> travelDistances;
+
     private int nChangesBus;
     private HashMap<TransportMode, Double> costs;    // todo. improvement: update cost of fuel based on trip
 
@@ -48,13 +47,8 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
      */
     @Override
     public TripTour executeOnce(PlanToAgentInterface<TripTour> planToAgentInterface) {
-        // initialise travel time
-        this.travelTimeSeconds = new HashMap<TransportMode, Integer>();
-        this.travelTimeSeconds.put(TransportMode.WALK, 0);
-        this.travelTimeSeconds.put(TransportMode.BIKE, 0);
-        this.travelTimeSeconds.put(TransportMode.CAR_DRIVER, 0);
-        this.travelTimeSeconds.put(TransportMode.CAR_PASSENGER, 0);
-        this.travelTimeSeconds.put(TransportMode.BUS_TRAM, 0);
+        this.travelTimes = new HashMap<TransportMode, Integer>();
+        this.travelDistances = new HashMap<TransportMode, Integer>();
 
         // initialise cost
         this.costs = new HashMap<TransportMode, Double>();
@@ -67,115 +61,64 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
         Person person = planToAgentInterface.getContext(Person.class);
         boolean carPossible = person.hasCarLicense() & person.getHousehold().hasCarOwnership();
 
-
-        // create the trip tour from the activity tour
-        this.generateTripTour(activityTour);
-
-        // determine the modal choice for the tour
-        if(this.tripTour.getTripChain().size() > 0) {
-            // get choice probabilities from MNL model
-            HashMap<TransportMode, Double> choiceProbabilities = getChoiceProbabilities(travelTimeSeconds, costs, nChangesBus, carPossible);
-
-            // randomly sample a transport mode from the computed distribution
-            TransportMode transportMode = sampleWithCumulativeDistribution(choiceProbabilities);
-
-            //  select the travel time of the selected modal choice
-            int travelTime = travelTimeSeconds.get(transportMode);
-
-            this.tripTour.setTransportMode(transportMode);
-            this.tripTour.setTravelTime(travelTime);
-        }
-
-        // just for printing for each trip in the chain
-        LOGGER.log(Level.INFO, this.tripTour.toString());
-
-        return this.tripTour;
-    }
-
-    /**
-     * The function instantiate tripTour with the given tour/chain of activities
-     * @param activityTour: chain of activities
-     */
-    private void generateTripTour(ActivityTour activityTour) {
-        // ------------------------------------------------------------------------------
-
+        /**
+         *  generation of transport mode for each trip
+         */
         List<Activity> activities = activityTour.getActivityTour();
 
         this.tripTour = new TripTour(activityTour.getPid(), activityTour.getDay());
         Activity activityOrigin = activities.get(0);
 
-        boolean lastTripByTrain = false;
-
         // for each destination (starting from the second one) there is a trip
         for (Activity activityDestination : activities.subList(1, activities.size())) {
-            boolean tripInDHZW = true;
+            boolean trainPossible = true;
+            boolean busPossible = true;
 
-            // The simulation is only for trips that have origin and/or arrival in DHZW
+            // not entirely outside DHZW
+            if (!activityOrigin.getLocation().isInsideDHZW() & !activityDestination.getLocation().isInsideDHZW()) {
+                // calculate the time for:
+                // car only
+                // bike only
+                // foot only
+                calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.WALK);
+                calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.BIKE);
+                calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.CAR);
 
-            if (activityOrigin.getLocation().isInsideDHZW() & activityDestination.getLocation().isInsideDHZW()) {
-                // entirely inside DHZW
+                // if it is possible by bus
+                //  calculate the time
+                //  travelTimes.put(TransportMode.BUS_TRAM, calculateTravelTime(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.BUS_TRAM));
+                // else
+                //  busPossible = false;
 
-                calculateTravelTimes(activityOrigin.getLocation(), activityDestination.getLocation(), activityDestination.getStartTime());
+                // if the trip is partially outside, the train is an option
+                if (!(activityOrigin.getLocation().isInsideDHZW() & activityDestination.getLocation().isInsideDHZW())) {
+                    // calculate the time for:
+                    // train + walk + bike
 
-                /*// todo: update compute here the time of the trip per each modal choice
-                this.travelTimeSeconds.put(TransportMode.WALK, this.travelTimeSeconds.get(TransportMode.WALK) + 45);
-                this.travelTimeSeconds.put(TransportMode.BIKE, this.travelTimeSeconds.get(TransportMode.WALK) + 30);
-                this.travelTimeSeconds.put(TransportMode.CAR_DRIVER, this.travelTimeSeconds.get(TransportMode.WALK) + 15);
-                this.travelTimeSeconds.put(TransportMode.CAR_PASSENGER, this.travelTimeSeconds.get(TransportMode.WALK) + 15);
-                this.travelTimeSeconds.put(TransportMode.BUS_TRAM, this.travelTimeSeconds.get(TransportMode.WALK) + 25);*/
-
-                tripInDHZW = true;
-
-            } else if (activityOrigin.getLocation().isInsideDHZW() & !activityDestination.getLocation().isInsideDHZW()) {
-                // inside -> outside
-
-                HashMap<TransportMode, Double> outsideProbabilities = getOutsideTripsDistribution(activityDestination.getActivityType());
-
-                // randomly sample a transport mode from the computed distribution
-                TransportMode outsideTransportMode = sampleWithCumulativeDistribution(outsideProbabilities);
-
-                if(outsideTransportMode.equals(TransportMode.TRAIN)){
-                    if(Math.random() < 0.15) {
-                        // the agent goes to The Hague Moerwijk to take the train. Hence, I need to care about such internal trip
-                        lastTripByTrain = true;
-
-                        activityDestination.getLocation().setToTrainStation();
-
-                        // todo: update compute here the time of the trip per each modal choice
-                        this.travelTimeSeconds.put(TransportMode.WALK, this.travelTimeSeconds.get(TransportMode.WALK) + 45);
-                        this.travelTimeSeconds.put(TransportMode.BIKE, this.travelTimeSeconds.get(TransportMode.WALK) + 30);
-                        this.travelTimeSeconds.put(TransportMode.CAR_DRIVER, this.travelTimeSeconds.get(TransportMode.WALK) + 15);
-                        this.travelTimeSeconds.put(TransportMode.CAR_PASSENGER, this.travelTimeSeconds.get(TransportMode.WALK) + 15);
-                        this.travelTimeSeconds.put(TransportMode.BUS_TRAM, this.travelTimeSeconds.get(TransportMode.WALK) + 25);
-
-                        tripInDHZW = true;
-                    }
-                } else {
-                    // the main trip is not by train, though Moerwijk, so I do not care
-                    tripInDHZW = false;
+                    // if it is possible by train
+                    //  calculate the time
+                    //  travelTimes.put(TransportMode.TRAIN, calculateTravelTime(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.TRAIN));
+                    // else
+                    //  trainPossible = false;
                 }
-            } else if (!activityOrigin.getLocation().isInsideDHZW() & activityDestination.getLocation().isInsideDHZW() & lastTripByTrain) {
-                // the agent comes back from outside, and before it went out by train
-                lastTripByTrain = false;
 
-                activityOrigin.getLocation().setToTrainStation();
+                // compute choice probabilities
+                HashMap<TransportMode, Double> choiceProbabilities = MNLModalChoiceModel.getChoiceProbabilities(travelTimes, costs, nChangesBus, carPossible,trainPossible, busPossible);
 
-                // todo: update compute here the time of the trip per each modal choice
-                travelTimeSeconds.put(TransportMode.WALK, travelTimeSeconds.get(TransportMode.WALK) + 45);
-                travelTimeSeconds.put(TransportMode.BIKE, travelTimeSeconds.get(TransportMode.WALK) + 30);
-                travelTimeSeconds.put(TransportMode.CAR_DRIVER, travelTimeSeconds.get(TransportMode.WALK) + 15);
-                travelTimeSeconds.put(TransportMode.CAR_PASSENGER, travelTimeSeconds.get(TransportMode.WALK) + 15);
-                travelTimeSeconds.put(TransportMode.BUS_TRAM, travelTimeSeconds.get(TransportMode.WALK) + 25);
+                // decide the modal choice
+                TransportMode transportMode = CumulativeDistribution.sampleWithCumulativeDistribution(choiceProbabilities);
 
-                tripInDHZW = true;
+                // if the trip is partially outside and by bus or train
+                if (!(activityOrigin.getLocation().isInsideDHZW() & activityDestination.getLocation().isInsideDHZW()) & (transportMode.equals(TransportMode.TRAIN) | transportMode.equals(TransportMode.BUS_TRAM))) {
+                    // todo
+                    // find the bus or train station.
+                    // set it as destination, or stating point
+                    // recalculate the modal choice, choosing from: walk, bike, car, bus_tram
+                }
 
-            } else {
-                // outside -> outside, outside -> inside without the train to go outside before
-                tripInDHZW = false;
-            }
+                int travelTime = travelTimes.get(transportMode);
 
-            // add the trip to the chain
-            if (tripInDHZW) {
+                // add the trip to the tour
                 this.tripTour.addTrip(new Trip(activityOrigin.getPid(),
                         activityOrigin.getHid(),
                         activityOrigin.getActivityType(),
@@ -188,41 +131,49 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                         activityOrigin.getEndTime(),
                         activityDestination.getStartTime()
                 ));
-            }
 
+            }
             // update past activity
             activityOrigin = activityDestination;
         }
+
+        return this.tripTour;
     }
 
-    private void calculateTravelTimes (LocationEntry departure, LocationEntry arrival, ActivityTime arrivalTime) {
+    private void calculateTimeDistance (LocationEntry departure, LocationEntry arrival, TransportMode transportMode) {
         // fixed flags
         String otpBaseUrl = "http://localhost:8801/otp/routers/default/";
-        String date = "01/01/2019";
-        int numberResults = 1 ;
+        String date = "2023-03-06";
+        int numberResults = 2;
         boolean arriveBy = true;
 
         String fromPoint = departure.getLatitude() +","+ departure.getLongitude();
         String toPoint = arrival.getLatitude() +","+ arrival.getLongitude();
-        String time = arrivalTime.getHour_of_day() + ":" + arrivalTime.getMinute_of_hour();
+        String time = arrival.getStartTime().getHour_of_day() + ":" + arrival.getStartTime().getMinute_of_hour();
+
+        String mode = null;
+        switch (transportMode){
+            case WALK:
+                mode = "WALK";
+                break;
+            case BIKE:
+                mode = "BICYCLE";
+                break;
+            case CAR:
+                mode = "CAR";
+                break;
+            case BUS_TRAM:
+                mode = "WALK,BICYCLE,BUS,TRAM";
+                break;
+            case TRAIN:
+                mode = "WALK,BICYCLE,CAR,TRAIN";
+                break;
+        }
 
         // create the full query
-        String otpUrl = otpBaseUrl + "plan?fromPlace=" + fromPoint + "&toPlace=" + toPoint + "&date=" + date + "&time=" + time + "&arriveBy=" + arriveBy + "&numItineraries=" + numberResults;
-
-        travelTimeSeconds.put(TransportMode.WALK, travelTimeSeconds.get(TransportMode.WALK) + getTravelTime(otpUrl, "WALK"));
-        travelTimeSeconds.put(TransportMode.BIKE, travelTimeSeconds.get(TransportMode.BIKE) + getTravelTime(otpUrl, "BICYCLE"));
-        int carTravelTime = getTravelTime(otpUrl, "CAR");
-        travelTimeSeconds.put(TransportMode.CAR_DRIVER, travelTimeSeconds.get(TransportMode.CAR_DRIVER) + carTravelTime);
-        travelTimeSeconds.put(TransportMode.CAR_PASSENGER, travelTimeSeconds.get(TransportMode.CAR_PASSENGER) + carTravelTime);
-        travelTimeSeconds.put(TransportMode.BUS_TRAM, travelTimeSeconds.get(TransportMode.BUS_TRAM) + getTravelTime(otpUrl, "BUS"));
-    }
-
-    private int getTravelTime(String otpUrl, String mode){
-        String query = otpUrl + "&mode=" + mode;
-        System.out.println(query);
+        String query = otpBaseUrl + "plan?fromPlace=" + fromPoint + "&toPlace=" + toPoint + "&date=" + date + "&time=" + time + "&arriveBy=" + arriveBy + "&numItineraries=" + numberResults + "&mode=" + mode;
 
         int travelTime = 0;
-        // Send a GET request to the OTP server
         try {
             URL url = new URL(query);
 
@@ -238,28 +189,35 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
             }
             reader.close();
 
-            JSONObject jsonResponse = new JSONObject(response.toString());
+            JSONObject responseJSON = new JSONObject(response.toString());
+            JSONArray jsonItineraries = responseJSON.getJSONObject("plan").getJSONArray("itineraries");
 
-            // Get the first itinerary from the response
-            JSONObject itinerary = jsonResponse.getJSONObject("plan").getJSONArray("itineraries").getJSONObject(0);
+            // order for the fastest connection
+            // todo: instead of of ordering, just filter the one that contains the modal choice
+            List<JSONObject> list = new ArrayList<JSONObject>();
+            for (int i = 0; i < jsonItineraries.length(); i++) {
+                list.add(jsonItineraries.getJSONObject(i));
+            }
+            list.sort(new SortBasedOnMessageId());
 
-            // Get the duration of the itinerary in seconds
-            travelTime = itinerary.getInt("duration"); // seconds
+            JSONObject fastestItinerary = new JSONArray(list).getJSONObject(0);
 
-            // Print the response from the OTP server
-            System.out.println(mode + ": " + response);
+            travelTime = fastestItinerary.getInt("duration");
 
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        } catch (ProtocolException e) {
-            throw new RuntimeException(e);
+            //todo
+            // distance
+
+            System.out.println(responseJSON);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        System.out.println(travelTime);
-        return travelTime;
+        LOGGER.log(Level.INFO, transportMode + ": " + travelTime);
+
+        this.travelTimes.put(transportMode, travelTime);
+        //this.travelDistances.put(transportMode, distance)
     }
+
 
 
 }
