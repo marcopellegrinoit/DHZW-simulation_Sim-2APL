@@ -55,7 +55,7 @@ public class Trip {
                 ", origin_id = " + arrivalLid +
                 " (starts at " + nextActivityStartTime +
                 "). [mode:" + transportMode +
-                " - time: " + travelTime +
+                " - time: " + travelTime + "mins" +
                 " - distance: " + travelDistance +
                 "]}";
     }

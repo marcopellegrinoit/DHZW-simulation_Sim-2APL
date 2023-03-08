@@ -188,6 +188,8 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
         String query = otpBaseUrl + "plan?fromPlace=" + fromPoint + "&toPlace=" + toPoint + "&date=" + date + "&time=" + time + "&arriveBy=" + arriveBy + "&numItineraries=" + numberResults + "&mode=" + mode;
 
         int travelTime = 0;
+        int distance = 0;
+
         try {
             URL url = new URL(query);
 
@@ -216,22 +218,26 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
 
             JSONObject fastestItinerary = new JSONArray(list).getJSONObject(0);
 
-            travelTime = fastestItinerary.getInt("duration");
+            // extract total travel time
+            travelTime = fastestItinerary.getInt("duration")/60; // transform seconds into minutes
 
-            //todo
-            // distance
+            // sum the length of each leg for the total distance in km
+            JSONArray legs = fastestItinerary.getJSONArray("legs");
+            for (int i = 0; i < legs.length(); i++) {
+                JSONObject leg = legs.getJSONObject(i);
+                distance += leg.getInt("distance");
+            }
+            distance = distance/1000; // transform from meters to kilometers
+
+            LOGGER.log(Level.INFO, transportMode + ". Time: " + travelTime + " mins - distance: " + distance + " km");
 
             System.out.println(responseJSON);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        LOGGER.log(Level.INFO, transportMode + ": " + travelTime);
-
-        this.travelTimes.put(transportMode, travelTime/60);
-        this.travelDistances.put(transportMode, 0);
+        this.travelTimes.put(transportMode, travelTime);
+        this.travelDistances.put(transportMode, distance);
     }
-
-
-
+    
 }
