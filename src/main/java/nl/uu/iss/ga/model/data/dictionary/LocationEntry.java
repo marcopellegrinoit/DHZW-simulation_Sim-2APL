@@ -85,7 +85,7 @@ public class LocationEntry {
                 ParserUtil.parseAsLong(keyValue.get("pid")),
                 ParserUtil.parseAsInt(keyValue.get("activity_number")),
                 StringCodeTypeInterface.parseAsEnum(ActivityType.class, keyValue.get("activity_type")),
-                new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time"))),
+                new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time_seconds"))),
                 keyValue.get("lid"),
                 ParserUtil.parseAsDouble(keyValue.get("longitude")),
                 ParserUtil.parseAsDouble(keyValue.get("latitude")),

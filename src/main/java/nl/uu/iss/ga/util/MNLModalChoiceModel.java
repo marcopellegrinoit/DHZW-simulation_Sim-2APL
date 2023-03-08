@@ -46,7 +46,7 @@ public class MNLModalChoiceModel {
      * @param nChangesBus: number of changes if using the bus
      * @return a map of probability distribution over transport modes
      */
-    public static HashMap<TransportMode, Double> getChoiceProbabilities (HashMap<TransportMode, Integer> travelTimes, HashMap<TransportMode, Double> costs, int nChangesBus, int nChangesTrain, boolean carPossible, boolean trainPossible, boolean busTramPossible) {
+    public static HashMap<TransportMode, Double> getChoiceProbabilities (HashMap<TransportMode, Integer> travelTimes, HashMap<TransportMode, Double> costs, int nChangesBus, int nChangesTrain, boolean carPossible, boolean trainPossible, boolean busTramPossible, boolean walkPossible) {
         // probability distribution of transport modes
         HashMap<TransportMode, Double> choiceProbabilities = new HashMap<>();
 
@@ -54,11 +54,13 @@ public class MNLModalChoiceModel {
 
         // add the transport modes that are always available
         List<TransportMode> transportModeList = new ArrayList<TransportMode>();
-        transportModeList.add(TransportMode.WALK);
         transportModeList.add(TransportMode.BIKE);
         transportModeList.add(TransportMode.CAR_PASSENGER);
 
         // add the transport modes that might be available
+        if (walkPossible){
+            transportModeList.add(TransportMode.WALK);
+        }
         if (trainPossible){
             transportModeList.add(TransportMode.TRAIN);
         }

@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -73,6 +74,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
             //todo change to true
             boolean trainPossible = false;
             boolean busPossible = false;
+            boolean walkPossible = true;
             this.nChangesBus = 0;
             this.nChangesTrain = 0;
             this.travelTimes.clear();
@@ -84,7 +86,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                 // car only
                 // bike only
                 // foot only
-                calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.WALK);
+                walkPossible = calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.WALK);
                 calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.BIKE);
                 calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.CAR_PASSENGER);
                 if(carPossible) {
@@ -96,6 +98,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                 //  travelTimes.put(TransportMode.BUS_TRAM, calculateTravelTime(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.BUS_TRAM));
                 // else
                 //  busPossible = false;
+                busPossible = calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.BUS_TRAM);
 
                 // if the trip is partially outside, the train is an option
                 if (!(activityOrigin.getLocation().isInsideDHZW() & activityDestination.getLocation().isInsideDHZW())) {
@@ -107,10 +110,11 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                     //  travelTimes.put(TransportMode.TRAIN, calculateTravelTime(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.TRAIN));
                     // else
                     //  trainPossible = false;
+                    trainPossible = calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.TRAIN);
                 }
 
                 // compute choice probabilities
-                HashMap<TransportMode, Double> choiceProbabilities = MNLModalChoiceModel.getChoiceProbabilities(travelTimes, costs, nChangesBus, nChangesTrain, carPossible,trainPossible, busPossible);
+                HashMap<TransportMode, Double> choiceProbabilities = MNLModalChoiceModel.getChoiceProbabilities(travelTimes, costs, nChangesBus, nChangesTrain, carPossible,trainPossible, busPossible, walkPossible);
 
                 // decide the modal choice
                 TransportMode transportMode = CumulativeDistribution.sampleWithCumulativeDistribution(choiceProbabilities);
@@ -153,11 +157,11 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
         return this.tripTour;
     }
 
-    private void calculateTimeDistance (LocationEntry departure, LocationEntry arrival, TransportMode transportMode) {
+    private boolean calculateTimeDistance (LocationEntry departure, LocationEntry arrival, TransportMode transportMode) {
         // fixed flags
         String otpBaseUrl = "http://localhost:8801/otp/routers/default/";
         String date = "2023-03-06";
-        int numberResults = 2;
+        int numberResults = 3;
         boolean arriveBy = true;
 
         String fromPoint = departure.getLatitude() +","+ departure.getLongitude();
@@ -177,7 +181,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                 mode = "CAR";
                 break;
             case BUS_TRAM:
-                mode = "WALK,BICYCLE,BUS,TRAM";
+                mode = "WALK,BUS,TRAM";
                 break;
             case TRAIN:
                 mode = "WALK,BICYCLE,CAR,TRAIN";
@@ -186,9 +190,6 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
 
         // create the full query
         String query = otpBaseUrl + "plan?fromPlace=" + fromPoint + "&toPlace=" + toPoint + "&date=" + date + "&time=" + time + "&arriveBy=" + arriveBy + "&numItineraries=" + numberResults + "&mode=" + mode;
-
-        int travelTime = 0;
-        int distance = 0;
 
         try {
             URL url = new URL(query);
@@ -208,36 +209,74 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
             JSONObject responseJSON = new JSONObject(response.toString());
             JSONArray jsonItineraries = responseJSON.getJSONObject("plan").getJSONArray("itineraries");
 
-            // order for the fastest connection
-            // todo: instead of of ordering, just filter the one that contains the modal choice
-            List<JSONObject> list = new ArrayList<JSONObject>();
+            // filter the results by the one that really contains the desired mode choice
+            List<JSONObject> filteredItineraries = new ArrayList<>();
             for (int i = 0; i < jsonItineraries.length(); i++) {
-                list.add(jsonItineraries.getJSONObject(i));
+                JSONObject itinerary = jsonItineraries.getJSONObject(i);
+                JSONArray legs = itinerary.getJSONArray("legs");
+                boolean containsMode = false;
+                for (int j = 0; j < legs.length(); j++) {
+                    JSONObject leg = legs.getJSONObject(j);
+                    if(transportMode.equals(TransportMode.BUS_TRAM)){
+                        if (leg.getString("mode").equals("BUS") | leg.getString("mode").equals("TRAM")) {
+                            containsMode = true;
+                            break;
+                        }
+                    } else if (transportMode.equals(TransportMode.TRAIN)) {
+                        if (leg.getString("mode").equals("TRAIN")) {
+                            containsMode = true;
+                            break;
+                        }
+                    } else {
+                        if (leg.getString("mode").equals(mode)) {
+                            containsMode = true;
+                            break;
+                        }
+                    }
+                }
+                if (containsMode) {
+                    filteredItineraries.add(itinerary);
+                }
             }
-            list.sort(new SortBasedOnMessageId());
 
-            JSONObject fastestItinerary = new JSONArray(list).getJSONObject(0);
+            // if there is at least one suitable result
+            if(filteredItineraries.size() > 0) {
 
-            // extract total travel time
-            travelTime = fastestItinerary.getInt("duration")/60; // transform seconds into minutes
+                // Sort the filtered itineraries by duration
+                filteredItineraries.sort(new Comparator<JSONObject>() {
+                    public int compare(JSONObject o1, JSONObject o2) {
+                        return Integer.compare(o1.getInt("duration"), o2.getInt("duration"));
+                    }
+                });
 
-            // sum the length of each leg for the total distance in km
-            JSONArray legs = fastestItinerary.getJSONArray("legs");
-            for (int i = 0; i < legs.length(); i++) {
-                JSONObject leg = legs.getJSONObject(i);
-                distance += leg.getInt("distance");
+                // Get the first itinerary from the filtered list
+                JSONObject fastestItinerary = filteredItineraries.get(0);
+
+                int travelTime = fastestItinerary.getInt("duration")/60;
+
+                int distance = 0;
+                JSONArray legs = fastestItinerary.getJSONArray("legs");
+                for (int i = 0; i < legs.length(); i++) {
+                    JSONObject leg = legs.getJSONObject(i);
+                    distance += leg.getInt("distance");
+                }
+                distance = distance/1000; // transform from meters to kilometers
+
+                LOGGER.log(Level.INFO, transportMode + ". Time: " + travelTime + " mins - distance: " + distance + " km");
+
+                this.travelTimes.put(transportMode, travelTime);
+                this.travelDistances.put(transportMode, distance);
+
+                return(true);
+            } else {
+                LOGGER.log(Level.INFO, transportMode + ". No solution available");
+
+                return(false);
             }
-            distance = distance/1000; // transform from meters to kilometers
 
-            LOGGER.log(Level.INFO, transportMode + ". Time: " + travelTime + " mins - distance: " + distance + " km");
-
-            System.out.println(responseJSON);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        this.travelTimes.put(transportMode, travelTime);
-        this.travelDistances.put(transportMode, distance);
     }
-    
+
 }
