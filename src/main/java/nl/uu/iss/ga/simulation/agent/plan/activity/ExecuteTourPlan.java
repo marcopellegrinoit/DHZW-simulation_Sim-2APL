@@ -31,10 +31,12 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
     private final ActivityTour activityTour;
     private TripTour tripTour;
     private HashMap<TransportMode, Integer> travelTimes;
-    private HashMap<TransportMode, Integer> travelDistances;
+    private HashMap<TransportMode, Double> travelDistances;
 
     private int nChangesBus;
     private int nChangesTrain;
+    private int walkTimeBus;
+    private int walkTimeTrain;
     private HashMap<TransportMode, Double> costs;    // todo. improvement: update cost of fuel based on trip
 
     public ExecuteTourPlan(ActivityTour activityTour) {
@@ -50,7 +52,9 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
     @Override
     public TripTour executeOnce(PlanToAgentInterface<TripTour> planToAgentInterface) {
         this.travelTimes = new HashMap<TransportMode, Integer>();
-        this.travelDistances = new HashMap<TransportMode, Integer>();
+        this.travelDistances = new HashMap<TransportMode, Double>();
+        this.walkTimeBus = 0;
+        this.walkTimeTrain = 0;
 
         // initialise cost
         this.costs = new HashMap<TransportMode, Double>();
@@ -59,7 +63,6 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
         this.costs.put(TransportMode.BUS_TRAM, 2.0);
 
         Person person = planToAgentInterface.getContext(Person.class);
-        boolean carPossible = person.hasCarLicense() & person.getHousehold().hasCarOwnership();
 
         /**
          *  generation of transport mode for each trip
@@ -69,29 +72,36 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
         this.tripTour = new TripTour(activityTour.getPid(), activityTour.getDay());
         Activity activityOrigin = activities.get(0);
 
+        boolean trainPossible;
+        boolean busPossible;
+        boolean walkPossible;
+        boolean bikePossible ;
+        boolean carDriverPossible;
+        boolean carPassengerPossible;
+
         // for each destination (starting from the second one) there is a trip
         for (Activity activityDestination : activities.subList(1, activities.size())) {
             //todo change to true
-            boolean trainPossible = false;
-            boolean busPossible = false;
-            boolean walkPossible = true;
+            trainPossible = false;
+            carDriverPossible = person.hasCarLicense() & person.getHousehold().hasCarOwnership();
             this.nChangesBus = 0;
             this.nChangesTrain = 0;
             this.travelTimes.clear();
             this.travelDistances.clear();
 
             // not entirely outside DHZW
-            if (activityOrigin.getLocation().isInsideDHZW() | activityDestination.getLocation().isInsideDHZW()) {
+            if (activityOrigin.getLocation().isInsideDHZW() & activityDestination.getLocation().isInsideDHZW()) {
+//            if (activityOrigin.getLocation().isInsideDHZW() | activityDestination.getLocation().isInsideDHZW()) {
                 // calculate the time for:
                 // car only
                 // bike only
                 // foot only
                 walkPossible = calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.WALK);
-                calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.BIKE);
-                calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.CAR_PASSENGER);
-                if(carPossible) {
-                    calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.CAR_DRIVER);
+                bikePossible = calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.BIKE);
+                if(carDriverPossible) {
+                    carDriverPossible = calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.CAR_DRIVER);
                 }
+                carPassengerPossible = calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.CAR_PASSENGER);
 
                 // if it is possible by bus
                 //  calculate the time
@@ -102,6 +112,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
 
                 // if the trip is partially outside, the train is an option
                 if (!(activityOrigin.getLocation().isInsideDHZW() & activityDestination.getLocation().isInsideDHZW())) {
+                    System.out.println("ERROR FOR NOW");
                     // calculate the time for:
                     // train + walk + bike
 
@@ -114,7 +125,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                 }
 
                 // compute choice probabilities
-                HashMap<TransportMode, Double> choiceProbabilities = MNLModalChoiceModel.getChoiceProbabilities(travelTimes, costs, nChangesBus, nChangesTrain, carPossible,trainPossible, busPossible, walkPossible);
+                HashMap<TransportMode, Double> choiceProbabilities = MNLModalChoiceModel.getChoiceProbabilities(travelTimes, costs, nChangesBus, nChangesTrain, carDriverPossible, carPassengerPossible,trainPossible, busPossible, walkPossible, bikePossible, this.walkTimeBus, this.walkTimeTrain);
 
                 // decide the modal choice
                 TransportMode transportMode = CumulativeDistribution.sampleWithCumulativeDistribution(choiceProbabilities);
@@ -128,7 +139,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                 }
 
                 int travelTime = travelTimes.get(transportMode);
-                int travelDistance = travelDistances.get(transportMode);
+                double travelDistance = travelDistances.get(transportMode);
 
                 // add the trip to the tour
                 Trip trip = new Trip(activityOrigin.getPid(),
@@ -181,12 +192,15 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                 mode = "CAR";
                 break;
             case BUS_TRAM:
-                mode = "WALK,BUS,TRAM";
+                mode = "WALK,BUS,TRAM,SUBWAY";
                 break;
             case TRAIN:
-                mode = "WALK,BICYCLE,CAR,TRAIN";
+                mode = "WALK,BICYCLE,TRAIN,TRAM,BUS,SUBWAY,CAR";
                 break;
         }
+
+        //LOGGER.log(Level.INFO, "Looking from " + fromPoint + " to " + toPoint + " arrive at " + time + " mode:" + mode);
+
 
         // create the full query
         String query = otpBaseUrl + "plan?fromPlace=" + fromPoint + "&toPlace=" + toPoint + "&date=" + date + "&time=" + time + "&arriveBy=" + arriveBy + "&numItineraries=" + numberResults + "&mode=" + mode;
@@ -252,15 +266,31 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                 // Get the first itinerary from the filtered list
                 JSONObject fastestItinerary = filteredItineraries.get(0);
 
+                // calculate travel time in minutes
                 int travelTime = fastestItinerary.getInt("duration")/60;
 
-                int distance = 0;
+                // calculate distance and walk time
+                double distance = 0;
+                int walkTime = 0;
                 JSONArray legs = fastestItinerary.getJSONArray("legs");
                 for (int i = 0; i < legs.length(); i++) {
                     JSONObject leg = legs.getJSONObject(i);
                     distance += leg.getInt("distance");
+
+                    if(leg.getString("mode").equals("WALK")){
+                        walkTime += leg.getInt("duration");
+                    }
                 }
                 distance = distance/1000; // transform from meters to kilometers
+
+                // calculate number of changes. Subtract 3 because I do not want to count the going to and from the station. Those are not changes.
+                if(transportMode.equals(TransportMode.TRAIN)){
+                    this.nChangesTrain = legs.length()-3;
+                    this.walkTimeTrain = walkTime;
+                } else if (transportMode.equals(TransportMode.BUS_TRAM)){
+                    this.nChangesBus = legs.length()-3;
+                    this.walkTimeBus = walkTime;
+                }
 
                 LOGGER.log(Level.INFO, transportMode + ". Time: " + travelTime + " mins - distance: " + distance + " km");
 

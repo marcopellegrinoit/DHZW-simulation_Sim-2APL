@@ -23,9 +23,9 @@ public class Trip {
     private final int activityTimeGap;
     private TransportMode transportMode;
     private int travelTime;
-    private int travelDistance;
+    private double travelDistance;
 
-    public Trip(long pid, long hid, ActivityType departureActivityType, ActivityType arrivalActivityType, String departurePC4, String arrivalPC4, String departureLid, String arrivalLid, ActivityTime previousActivityStartTime, ActivityTime previousActivityEndTime, ActivityTime nextActivityStartTime, TransportMode transportMode, int travelTime, int travelDistance) {
+    public Trip(long pid, long hid, ActivityType departureActivityType, ActivityType arrivalActivityType, String departurePC4, String arrivalPC4, String departureLid, String arrivalLid, ActivityTime previousActivityStartTime, ActivityTime previousActivityEndTime, ActivityTime nextActivityStartTime, TransportMode transportMode, int travelTime, double travelDistance) {
         this.pid = pid;
         this.hid = hid;
         this.departureActivityType = departureActivityType;
@@ -55,8 +55,8 @@ public class Trip {
                 ", origin_id = " + arrivalLid +
                 " (starts at " + nextActivityStartTime +
                 "). [mode:" + transportMode +
-                " - time: " + travelTime + "mins" +
-                " - distance: " + travelDistance +
+                " - time: " + travelTime + " mins" +
+                " - distance: " + travelDistance + " km" +
                 "]}";
     }
 
@@ -124,7 +124,7 @@ public class Trip {
 
     public int getTravelTime(){return this.travelTime;}
 
-    public int getTravelDistance(){return this.travelDistance;}
+    public double getTravelDistance(){return this.travelDistance;}
 
     public TransportMode getTransportMode(){return this.transportMode;}
     public void setTravelTime(int travelTime){this.travelTime = travelTime;}

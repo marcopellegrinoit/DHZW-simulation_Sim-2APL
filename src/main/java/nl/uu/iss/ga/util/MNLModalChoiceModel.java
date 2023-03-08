@@ -46,25 +46,29 @@ public class MNLModalChoiceModel {
      * @param nChangesBus: number of changes if using the bus
      * @return a map of probability distribution over transport modes
      */
-    public static HashMap<TransportMode, Double> getChoiceProbabilities (HashMap<TransportMode, Integer> travelTimes, HashMap<TransportMode, Double> costs, int nChangesBus, int nChangesTrain, boolean carPossible, boolean trainPossible, boolean busTramPossible, boolean walkPossible) {
+
+
+    public static HashMap<TransportMode, Double> getChoiceProbabilities (HashMap<TransportMode, Integer> travelTimes, HashMap<TransportMode, Double> costs, int nChangesBus, int nChangesTrain, boolean carDriverPossible, boolean carPassengerPossible, boolean trainPossible, boolean busTramPossible, boolean walkPossible, boolean bikePossible, int walkTimeBus, int walkTimeTrain) {
         // probability distribution of transport modes
         HashMap<TransportMode, Double> choiceProbabilities = new HashMap<>();
 
         double sumUtilitiesExp = 0.0;
 
-        // add the transport modes that are always available
+        // add the transport modes that are available
         List<TransportMode> transportModeList = new ArrayList<TransportMode>();
-        transportModeList.add(TransportMode.BIKE);
-        transportModeList.add(TransportMode.CAR_PASSENGER);
-
-        // add the transport modes that might be available
+        if(bikePossible) {
+            transportModeList.add(TransportMode.BIKE);
+        }
+        if(carPassengerPossible) {
+            transportModeList.add(TransportMode.CAR_PASSENGER);
+        }
         if (walkPossible){
             transportModeList.add(TransportMode.WALK);
         }
         if (trainPossible){
             transportModeList.add(TransportMode.TRAIN);
         }
-        if (carPossible){
+        if (carDriverPossible){
             transportModeList.add(TransportMode.CAR_DRIVER);
         }
         if (busTramPossible){
@@ -90,10 +94,10 @@ public class MNLModalChoiceModel {
                     utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimes.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode);
                     break;
                 case BUS_TRAM:
-                    utility_i = alpha.get(transportMode) + betaTimeWalkBus * travelTimes.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode) + betaChangesBus * nChangesBus;
+                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimes.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode) + betaTimeWalkBus * walkTimeBus + betaChangesBus * nChangesBus;
                     break;
                 case TRAIN:
-                    utility_i = alpha.get(transportMode) + betaTimeWalkTrain * travelTimes.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode) + betaChangesTrain * nChangesTrain;
+                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimes.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode) + betaChangesTrain + betaTimeWalkTrain * walkTimeTrain * nChangesTrain;
                     break;
                 default:
                     break;
