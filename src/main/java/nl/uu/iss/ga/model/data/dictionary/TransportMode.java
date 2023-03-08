@@ -5,7 +5,6 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.util.StringCodeTypeInterface
 public enum TransportMode implements StringCodeTypeInterface {
     CAR_DRIVER("car_driver"),
     CAR_PASSENGER("car_passenger"),
-    CAR("car"),
     BIKE("bike"),
     BUS_TRAM("bus_tram"),
     TRAIN("train"),

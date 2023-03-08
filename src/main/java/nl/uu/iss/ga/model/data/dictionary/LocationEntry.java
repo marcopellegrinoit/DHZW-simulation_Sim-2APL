@@ -106,15 +106,4 @@ public class LocationEntry {
         return !this.lid.equals("outside_DHZW");
     }
 
-    public void setToTrainStation(){
-        this.lid = "station_Moerwijk";
-        this.longitude = 52.01678596;
-        this.latitude = 4.30776639;
-        this.pc4 = "2532";
-        this.pc6 = "2532CP";
-    }
-    public boolean isTrainStation(){
-        return this.lid.equals("station_Moerwijk");
-    }
-
 }

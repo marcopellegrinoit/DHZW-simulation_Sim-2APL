@@ -33,6 +33,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
     private HashMap<TransportMode, Integer> travelDistances;
 
     private int nChangesBus;
+    private int nChangesTrain;
     private HashMap<TransportMode, Double> costs;    // todo. improvement: update cost of fuel based on trip
 
     public ExecuteTourPlan(ActivityTour activityTour) {
@@ -56,8 +57,6 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
         this.costs.put(TransportMode.CAR_PASSENGER, 2.0);
         this.costs.put(TransportMode.BUS_TRAM, 2.0);
 
-        this.nChangesBus = 0;
-
         Person person = planToAgentInterface.getContext(Person.class);
         boolean carPossible = person.hasCarLicense() & person.getHousehold().hasCarOwnership();
 
@@ -71,18 +70,26 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
 
         // for each destination (starting from the second one) there is a trip
         for (Activity activityDestination : activities.subList(1, activities.size())) {
-            boolean trainPossible = true;
-            boolean busPossible = true;
+            //todo change to true
+            boolean trainPossible = false;
+            boolean busPossible = false;
+            this.nChangesBus = 0;
+            this.nChangesTrain = 0;
+            this.travelTimes.clear();
+            this.travelDistances.clear();
 
             // not entirely outside DHZW
-            if (!activityOrigin.getLocation().isInsideDHZW() & !activityDestination.getLocation().isInsideDHZW()) {
+            if (activityOrigin.getLocation().isInsideDHZW() | activityDestination.getLocation().isInsideDHZW()) {
                 // calculate the time for:
                 // car only
                 // bike only
                 // foot only
                 calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.WALK);
                 calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.BIKE);
-                calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.CAR);
+                calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.CAR_PASSENGER);
+                if(carPossible) {
+                    calculateTimeDistance(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.CAR_DRIVER);
+                }
 
                 // if it is possible by bus
                 //  calculate the time
@@ -103,7 +110,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                 }
 
                 // compute choice probabilities
-                HashMap<TransportMode, Double> choiceProbabilities = MNLModalChoiceModel.getChoiceProbabilities(travelTimes, costs, nChangesBus, carPossible,trainPossible, busPossible);
+                HashMap<TransportMode, Double> choiceProbabilities = MNLModalChoiceModel.getChoiceProbabilities(travelTimes, costs, nChangesBus, nChangesTrain, carPossible,trainPossible, busPossible);
 
                 // decide the modal choice
                 TransportMode transportMode = CumulativeDistribution.sampleWithCumulativeDistribution(choiceProbabilities);
@@ -113,13 +120,14 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                     // todo
                     // find the bus or train station.
                     // set it as destination, or stating point
-                    // recalculate the modal choice, choosing from: walk, bike, car, bus_tram
+                    // recalculate the modal choice, choosing from: walk, bike, car_passenger, car_driver, bus_tram
                 }
 
                 int travelTime = travelTimes.get(transportMode);
+                int travelDistance = travelDistances.get(transportMode);
 
                 // add the trip to the tour
-                this.tripTour.addTrip(new Trip(activityOrigin.getPid(),
+                Trip trip = new Trip(activityOrigin.getPid(),
                         activityOrigin.getHid(),
                         activityOrigin.getActivityType(),
                         activityDestination.getActivityType(),
@@ -129,8 +137,13 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                         activityDestination.getLocation().getLocationID(),
                         activityOrigin.getStartTime(),
                         activityOrigin.getEndTime(),
-                        activityDestination.getStartTime()
-                ));
+                        activityDestination.getStartTime(),
+                        transportMode,
+                        travelTime,
+                        travelDistance);
+                LOGGER.log(Level.INFO, trip.toString());
+                this.tripTour.addTrip(trip);
+
 
             }
             // update past activity
@@ -159,7 +172,8 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
             case BIKE:
                 mode = "BICYCLE";
                 break;
-            case CAR:
+            case CAR_DRIVER:
+            case CAR_PASSENGER:
                 mode = "CAR";
                 break;
             case BUS_TRAM:
@@ -214,8 +228,8 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
 
         LOGGER.log(Level.INFO, transportMode + ": " + travelTime);
 
-        this.travelTimes.put(transportMode, travelTime);
-        //this.travelDistances.put(transportMode, distance)
+        this.travelTimes.put(transportMode, travelTime/60);
+        this.travelDistances.put(transportMode, 0);
     }
 
 
