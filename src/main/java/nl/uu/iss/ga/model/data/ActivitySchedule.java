@@ -8,22 +8,22 @@ import java.util.List;
 import java.util.SortedMap;
 
 public class ActivitySchedule implements Context {
-    private final long household;
-    private final long person;
+    private final long hid;
+    private final long pid;
     private final SortedMap<ActivityTime, Activity> schedule;
 
-    public ActivitySchedule(long household, long person, SortedMap<ActivityTime, Activity> schedule) {
-        this.household = household;
-        this.person = person;
+    public ActivitySchedule(long hid, long pid, SortedMap<ActivityTime, Activity> schedule) {
+        this.hid = hid;
+        this.pid = pid;
         this.schedule = schedule;
     }
 
-    public long getHousehold() {
-        return household;
+    public long getHid() {
+        return hid;
     }
 
-    public long getPerson() {
-        return person;
+    public long getPid() {
+        return pid;
     }
 
     public SortedMap<ActivityTime, Activity> getSchedule() {

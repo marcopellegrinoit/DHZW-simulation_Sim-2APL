@@ -9,6 +9,7 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.reader.*;
 import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.RoutingBeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.util.tracking.ActivityTypeTracker;
 import main.java.nl.uu.iss.ga.util.tracking.ModeOfTransportTracker;
@@ -37,12 +38,18 @@ public class ConfigModel {
     private final List<File> householdFiles;
     private final List<File> personFiles;
     private final List<File> locationsFiles;
+    private final List<File> routingWalkFiles;
+    private final List<File> routingBikeFiles;
+    private final List<File> routingCarFiles;
     private final List<File> locationDesignationFiles;
     private final File stateFile;
 
     private HouseholdReader householdReader;
     private PersonReader personReader;
     private ActivityFileReader activityFileReader;
+    private SimmetricRoutingReader routingWalkReader;
+    private SimmetricRoutingReader routingBikeReader;
+    private SimmetricRoutingReader routingCarReader;
 
     private final ArgParse arguments;
     private final TomlTable table;
@@ -58,9 +65,13 @@ public class ConfigModel {
         this.householdFiles = getFiles("households", true);
         this.personFiles = getFiles("persons", true);
         this.locationsFiles = getFiles("locations", false);
+
+        this.routingWalkFiles = getFiles("routing_walk", true);
+        this.routingBikeFiles = getFiles("routing_bike", true);
+        this.routingCarFiles = getFiles("routing_car", true);
+
         this.stateFile = getFile("statefile", false);
         this.locationDesignationFiles = getFiles("locationDesignations", false);
-
 
         if(this.table.contains("seed")) {
             this.random = new Random(table.getLong("seed"));
@@ -79,6 +90,9 @@ public class ConfigModel {
         );
         this.personReader = new PersonReader(this.personFiles, this.householdReader.getHouseholds());
         this.activityFileReader = new ActivityFileReader(this.activityFiles);
+        this.routingWalkReader = new SimmetricRoutingReader(this.routingWalkFiles);
+        this.routingBikeReader = new SimmetricRoutingReader(this.routingBikeFiles);
+        this.routingCarReader = new SimmetricRoutingReader(this.routingCarFiles);
     }
 
     public void createAgents(Platform platform, EnvironmentInterface environmentInterface, ModeOfTransportTracker modeOfTransportTracker, ActivityTypeTracker activityTypeTracker) {
@@ -88,19 +102,22 @@ public class ConfigModel {
     }
     private void createAgentFromSchedule(Platform platform, EnvironmentInterface environmentInterface, ActivitySchedule schedule, ModeOfTransportTracker modeOfTransportTracker, ActivityTypeTracker activityTypeTracker) {
         BeliefContext beliefContext = new BeliefContext(environmentInterface, modeOfTransportTracker, activityTypeTracker);
+        RoutingBeliefContext routingBeliefContext = new RoutingBeliefContext(environmentInterface);
 
         AgentArguments<TripTour> arguments = new AgentArguments<TripTour>()
-                .addContext(this.personReader.getPersons().get(schedule.getPerson()))
+                .addContext(this.personReader.getPersons().get(schedule.getPid()))
                 .addContext(schedule)
                 .addContext(beliefContext)
+                .addContext(routingBeliefContext)
                 .addGoalPlanScheme(new GoalPlanScheme());
         try {
-            URI uri = new URI(null, String.format("agent-%04d", schedule.getPerson()),
+            URI uri = new URI(null, String.format("agent-%04d", schedule.getPid()),
                     platform.getHost(), platform.getPort(), null, null, null);
             AgentID aid = new AgentID(uri);
             Agent<TripTour> agent = new Agent<>(platform, arguments, aid);
 
-            long pid = schedule.getPerson();
+            long pid = schedule.getPid();
+            long hid = schedule.getHid();
 
             // loop into days of the week to split activities into each day
             for (DayOfWeek day: DayOfWeek.values()) {
@@ -112,7 +129,7 @@ public class ConfigModel {
                 // there is a trip only if there are at least two activities
                 if(activitiesInDay.size()>1){
                     // initialise the new chain
-                    ActivityTour activityTour = new ActivityTour(pid, day);
+                    ActivityTour activityTour = new ActivityTour(pid, hid, day);
                     activityTour.addActivity(activitiesInDay.get(0));
 
                     // loop through all the activities of the day
@@ -122,7 +139,7 @@ public class ConfigModel {
                         // if it comes back home the tour closes and start a new one
                         if (nextActivity.getActivityType().equals(ActivityType.HOME)){
                                 agent.adoptGoal(activityTour);
-                                activityTour = new ActivityTour(pid, day);
+                                activityTour = new ActivityTour(pid, hid, day);
                                 activityTour.addActivity(nextActivity);
                             }
                     }
@@ -131,8 +148,9 @@ public class ConfigModel {
 
             this.agents.add(aid);
             beliefContext.setAgentID(aid);
+            routingBeliefContext.setAgentID(aid);
         } catch (URISyntaxException e) {
-            LOGGER.log(Level.SEVERE, "Failed to create AgentID for agent " + schedule.getPerson(), e);
+            LOGGER.log(Level.SEVERE, "Failed to create AgentID for agent " + schedule.getPid(), e);
         }
     }
 

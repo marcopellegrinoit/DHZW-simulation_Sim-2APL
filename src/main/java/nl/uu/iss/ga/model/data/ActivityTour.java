@@ -14,14 +14,17 @@ public class ActivityTour extends Goal implements Cloneable {
     private List<Activity> tour;
     private final DayOfWeek day;
     private final long pid;
+    private final long hid;
 
-    public ActivityTour(long pid, DayOfWeek day) {
+    public ActivityTour(long pid, long hid, DayOfWeek day) {
         this.pid = pid;
+        this.hid = hid;
         this.day = day;
         this.tour = new ArrayList<Activity>();
     }
-    public ActivityTour(long pid, DayOfWeek day, List<Activity> tour) {
+    public ActivityTour(long pid, long hid, DayOfWeek day, List<Activity> tour) {
         this.pid = pid;
+        this.hid = hid;
         this.day = day;
         this.tour = tour;
     }
@@ -44,7 +47,7 @@ public class ActivityTour extends Goal implements Cloneable {
 
     @Override
     public ActivityTour clone() {
-        return new ActivityTour(this.pid, this.day, this.tour);
+        return new ActivityTour(this.pid, this.hid, this.day, this.tour);
     }
 
     public void addActivity(Activity activity) {
@@ -54,4 +57,6 @@ public class ActivityTour extends Goal implements Cloneable {
     public List<Activity> getActivityTour() {return this.tour;}
     public DayOfWeek getDay() {return this.day;}
     public long getPid() {return this.pid;}
+    public long getHid() {return this.hid;}
+
 }

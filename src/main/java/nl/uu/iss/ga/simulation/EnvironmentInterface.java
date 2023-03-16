@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 public class EnvironmentInterface implements TickHookProcessor<Activity> {
 
     private static final Logger LOGGER = Logger.getLogger(EnvironmentInterface.class.getName());
-
     private final Platform platform;
     private final ArgParse arguments;
     private long currentTick = 0;

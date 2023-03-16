@@ -20,24 +20,18 @@ public class LocationEntry {
     private final ActivityTime startTime;
 
     // Actual location data
-    private String lid;
-    private double longitude;
-    private double latitude;
-    private String pc4;
-    private String pc6;
+    private String postcode;
+    private boolean isInDHZW;
 
 
-    public LocationEntry(Long hid, Long pid, int activityNumber, ActivityType activityType, ActivityTime startTime, String lid, double longitude, double latitude, String pc4, String pc6) {
+    public LocationEntry(Long hid, Long pid, int activityNumber, ActivityType activityType, ActivityTime startTime, String postcode, boolean isInDHZW) {
         this.pid = pid;
         this.activityNumber = activityNumber;
         this.hid = hid;
         this.activityType = activityType;
         this.startTime = startTime;
-        this.lid = lid;
-        this.longitude = longitude;
-        this.latitude = latitude;
-        this.pc4 = pc4;
-        this.pc6 = pc6;
+        this.postcode = postcode;
+        this.isInDHZW = isInDHZW;
     }
 
     public Long getPid() {
@@ -60,16 +54,8 @@ public class LocationEntry {
         return this.startTime;
     }
 
-    public String getLocationID() {
-        return this.lid;
-    }
-
-    public double getLongitude() {
-        return this.longitude;
-    }
-
-    public double getLatitude() {
-        return this.latitude;
+    public String getPostcode() {
+        return this.postcode;
     }
 
     /**
@@ -86,24 +72,13 @@ public class LocationEntry {
                 ParserUtil.parseAsInt(keyValue.get("activity_number")),
                 StringCodeTypeInterface.parseAsEnum(ActivityType.class, keyValue.get("activity_type")),
                 new ActivityTime(ParserUtil.parseAsInt(keyValue.get("start_time_seconds"))),
-                keyValue.get("lid"),
-                ParserUtil.parseAsDouble(keyValue.get("longitude")),
-                ParserUtil.parseAsDouble(keyValue.get("latitude")),
-                keyValue.get("PC4"),
-                keyValue.get("PC6")
+                keyValue.get("postcode"),
+                ParserUtil.parseIntAsBoolean(keyValue.get("in_DHZW"))
         );
     }
 
-    public String getPc4() {
-        return pc4;
-    }
-
-    public String getPc6() {
-        return pc6;
-    }
-
-    public boolean isInsideDHZW() {
-        return !this.lid.equals("outside_DHZW");
+    public boolean isInDHZW() {
+        return this.isInDHZW;
     }
 
 }

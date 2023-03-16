@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>nl.uu.iss.ga</groupId>
-    <artifactId>sim2apl-episimpledemic-simulation</artifactId>
+    <artifactId>sim2apl-dhzw-simulation</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -56,6 +56,11 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20210307</version>
+        </dependency>
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.5.1</version>
         </dependency>
     </dependencies>
 

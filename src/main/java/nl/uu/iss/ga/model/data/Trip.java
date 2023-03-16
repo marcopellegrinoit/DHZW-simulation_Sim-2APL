@@ -12,28 +12,24 @@ public class Trip {
     private final long hid;
     private final ActivityType departureActivityType;
     private final ActivityType arrivalActivityType;
-    private final String departurePC4;
-    private final String arrivalPC4;
-    private final String departureLid;
-    private final String arrivalLid;
+    private final String departurePostcode;
+    private final String arrivalPostcode;
     private final ActivityTime previousActivityStartTime;
 
     private final ActivityTime previousActivityEndTime;
     private final ActivityTime nextActivityStartTime;
     private final int activityTimeGap;
     private TransportMode transportMode;
-    private int travelTime;
+    private double travelTime;
     private double travelDistance;
 
-    public Trip(long pid, long hid, ActivityType departureActivityType, ActivityType arrivalActivityType, String departurePC4, String arrivalPC4, String departureLid, String arrivalLid, ActivityTime previousActivityStartTime, ActivityTime previousActivityEndTime, ActivityTime nextActivityStartTime, TransportMode transportMode, int travelTime, double travelDistance) {
+    public Trip(long pid, long hid, ActivityType departureActivityType, ActivityType arrivalActivityType, String departurePostcode, String arrivalPostcode, ActivityTime previousActivityStartTime, ActivityTime previousActivityEndTime, ActivityTime nextActivityStartTime, TransportMode transportMode, double travelTime, double travelDistance) {
         this.pid = pid;
         this.hid = hid;
         this.departureActivityType = departureActivityType;
         this.arrivalActivityType = arrivalActivityType;
-        this.departurePC4 = departurePC4;
-        this.arrivalPC4 = arrivalPC4;
-        this.departureLid = departureLid;
-        this.arrivalLid = arrivalLid;
+        this.departurePostcode = departurePostcode;
+        this.arrivalPostcode = arrivalPostcode;
         this.previousActivityStartTime = previousActivityStartTime;
         this.previousActivityEndTime = previousActivityEndTime;
         this.nextActivityStartTime = nextActivityStartTime;
@@ -46,17 +42,17 @@ public class Trip {
     @Override
     public String toString() {
         return "Trip{" +
-                "origin_Activity = " + departureActivityType +
-                ", origin_id = " +departureLid +
-                " (" + previousActivityStartTime +
-                " - " + previousActivityEndTime +
+                "origin_Activity = " + this.departureActivityType +
+                ", postcode = " + this.departurePostcode +
+                " (" + this.previousActivityStartTime +
+                " - " + this.previousActivityEndTime +
                 ") --> " +
-                "origin_Activity = " + arrivalActivityType +
-                ", origin_id = " + arrivalLid +
-                " (starts at " + nextActivityStartTime +
-                "). [mode:" + transportMode +
-                " - time: " + travelTime + " mins" +
-                " - distance: " + travelDistance + " km" +
+                "origin_Activity = " + this.arrivalActivityType +
+                ", postcode = " + this.arrivalPostcode +
+                " (starts at " + this.nextActivityStartTime +
+                "). [mode:" + this.transportMode +
+                " - time: " + this.travelTime + " mins" +
+                " - distance: " + this.travelDistance + " km" +
                 "]}";
     }
 
@@ -94,20 +90,12 @@ public class Trip {
         return this.hid;
     }
 
-    public String getDeparturePC4() {
-        return this.departurePC4;
+    public String getDeparturePostcode() {
+        return this.departurePostcode;
     }
 
-    public String getArrivalPC4() {
-        return this.arrivalPC4;
-    }
-
-    public String getDepartureLid() {
-        return departureLid;
-    }
-
-    public String getArrivalLid() {
-        return arrivalLid;
+    public String getArrivalPostcode() {
+        return this.arrivalPostcode;
     }
 
     public ActivityTime getPreviousActivityEndTime() {
@@ -122,7 +110,7 @@ public class Trip {
         return activityTimeGap;
     }
 
-    public int getTravelTime(){return this.travelTime;}
+    public double getTravelTime(){return this.travelTime;}
 
     public double getTravelDistance(){return this.travelDistance;}
 

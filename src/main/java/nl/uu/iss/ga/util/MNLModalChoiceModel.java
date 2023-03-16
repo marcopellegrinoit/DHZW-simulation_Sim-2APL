@@ -1,5 +1,6 @@
 package main.java.nl.uu.iss.ga.util;
 
+import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 
 import java.util.ArrayList;
@@ -7,9 +8,18 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MNLModalChoiceModel {
-    private static final HashMap<TransportMode, Integer> alpha = new HashMap<>();
-    private static final HashMap<TransportMode, Double> betaTime = new HashMap<>();
-    private static final HashMap<TransportMode, Double> betaCost = new HashMap<>();
+    private static final double CAR_COST_KM = 0.5;
+    private static final double TRAIN_COST_KM = 0.5;
+    private static final double BUS_COST_KM = 0.5;
+    private static final HashMap<TransportMode, Integer> alphaWork = new HashMap<>();
+    private static final HashMap<TransportMode, Double> betaTimeWork = new HashMap<>();
+    private static final HashMap<TransportMode, Double> betaCostWork = new HashMap<>();
+    private static final HashMap<TransportMode, Integer> alphaSchool = new HashMap<>();
+    private static final HashMap<TransportMode, Double> betaTimeSchool = new HashMap<>();
+    private static final HashMap<TransportMode, Double> betaCostSchool = new HashMap<>();
+    private static final HashMap<TransportMode, Integer> alphaLeisure = new HashMap<>();
+    private static final HashMap<TransportMode, Double> betaTimeLeisure = new HashMap<>();
+    private static final HashMap<TransportMode, Double> betaCostLeisure = new HashMap<>();
 
     private static final double betaTimeWalkBus = -0.03;
     private static final double betaTimeWalkTrain = -0.03;
@@ -20,35 +30,87 @@ public class MNLModalChoiceModel {
      * Initialise all the alpha and beta constants
      */
     static {
-        alpha.put(TransportMode.WALK, 0);
-        alpha.put(TransportMode.BIKE, 0);
-        alpha.put(TransportMode.CAR_DRIVER, 1);
-        alpha.put(TransportMode.CAR_PASSENGER, -3);
-        alpha.put(TransportMode.BUS_TRAM, -1);
-        alpha.put(TransportMode.TRAIN, -1);
+        // work
+        alphaWork.put(TransportMode.WALK, 0);
+        alphaWork.put(TransportMode.BIKE, 0);
+        alphaWork.put(TransportMode.CAR_DRIVER, 1);
+        alphaWork.put(TransportMode.CAR_PASSENGER, -3);
+        alphaWork.put(TransportMode.BUS_TRAM, -1);
+        alphaWork.put(TransportMode.TRAIN, -1);
 
-        betaTime.put(TransportMode.WALK, -0.04);
-        betaTime.put(TransportMode.BIKE, -0.03);
-        betaTime.put(TransportMode.CAR_DRIVER, -0.02);
-        betaTime.put(TransportMode.CAR_PASSENGER, -0.02);
-        betaTime.put(TransportMode.BUS_TRAM, -0.02);
-        betaTime.put(TransportMode.TRAIN, -0.02);
+        betaTimeWork.put(TransportMode.WALK, -0.04);
+        betaTimeWork.put(TransportMode.BIKE, -0.03);
+        betaTimeWork.put(TransportMode.CAR_DRIVER, -0.02);
+        betaTimeWork.put(TransportMode.CAR_PASSENGER, -0.02);
+        betaTimeWork.put(TransportMode.BUS_TRAM, -0.02);
+        betaTimeWork.put(TransportMode.TRAIN, -0.02);
 
-        betaCost.put(TransportMode.CAR_DRIVER, -0.15);
-        betaCost.put(TransportMode.CAR_PASSENGER, -0.15);
-        betaCost.put(TransportMode.BUS_TRAM, -0.1);
-        betaCost.put(TransportMode.TRAIN, -0.1);
+        betaCostWork.put(TransportMode.CAR_DRIVER, -0.15);
+        betaCostWork.put(TransportMode.CAR_PASSENGER, -0.15);
+        betaCostWork.put(TransportMode.BUS_TRAM, -0.1);
+        betaCostWork.put(TransportMode.TRAIN, -0.1);
+
+        // school
+        alphaSchool.put(TransportMode.WALK, 0);
+        alphaSchool.put(TransportMode.BIKE, 0);
+        alphaSchool.put(TransportMode.CAR_DRIVER, 1);
+        alphaSchool.put(TransportMode.CAR_PASSENGER, -3);
+        alphaSchool.put(TransportMode.BUS_TRAM, -1);
+        alphaSchool.put(TransportMode.TRAIN, -1);
+
+        betaTimeSchool.put(TransportMode.WALK, -0.04);
+        betaTimeSchool.put(TransportMode.BIKE, -0.03);
+        betaTimeSchool.put(TransportMode.CAR_DRIVER, -0.02);
+        betaTimeSchool.put(TransportMode.CAR_PASSENGER, -0.02);
+        betaTimeSchool.put(TransportMode.BUS_TRAM, -0.02);
+        betaTimeSchool.put(TransportMode.TRAIN, -0.02);
+
+        betaCostSchool.put(TransportMode.CAR_DRIVER, -0.15);
+        betaCostSchool.put(TransportMode.CAR_PASSENGER, -0.15);
+        betaCostSchool.put(TransportMode.BUS_TRAM, -0.1);
+        betaCostSchool.put(TransportMode.TRAIN, -0.1);
+
+        // other: leisure
+        alphaLeisure.put(TransportMode.WALK, 0);
+        alphaLeisure.put(TransportMode.BIKE, 0);
+        alphaLeisure.put(TransportMode.CAR_DRIVER, 1);
+        alphaLeisure.put(TransportMode.CAR_PASSENGER, -3);
+        alphaLeisure.put(TransportMode.BUS_TRAM, -1);
+        alphaLeisure.put(TransportMode.TRAIN, -1);
+
+        betaTimeLeisure.put(TransportMode.WALK, -0.04);
+        betaTimeLeisure.put(TransportMode.BIKE, -0.03);
+        betaTimeLeisure.put(TransportMode.CAR_DRIVER, -0.02);
+        betaTimeLeisure.put(TransportMode.CAR_PASSENGER, -0.02);
+        betaTimeLeisure.put(TransportMode.BUS_TRAM, -0.02);
+        betaTimeLeisure.put(TransportMode.TRAIN, -0.02);
+
+        betaCostLeisure.put(TransportMode.CAR_DRIVER, -0.15);
+        betaCostLeisure.put(TransportMode.CAR_PASSENGER, -0.15);
+        betaCostLeisure.put(TransportMode.BUS_TRAM, -0.1);
+        betaCostLeisure.put(TransportMode.TRAIN, -0.1);
     }
 
-    /**
-     * @param travelTimes: map of trip duration with such transport mode
-     * @param costs: map of costs with such transport mode
-     * @param nChangesBus: number of changes if using the bus
-     * @return a map of probability distribution over transport modes
-     */
+    public static HashMap<TransportMode, Double> getChoiceProbabilities (HashMap<TransportMode, Double> travelTimes, HashMap<TransportMode, Double> travelDistances, int nChangesBus, int nChangesTrain, boolean carDriverPossible, boolean carPassengerPossible, boolean trainPossible, boolean busTramPossible, boolean walkPossible, boolean bikePossible, int walkTimeBus, int walkTimeTrain, ActivityType departureType, ActivityType arrivalType) {
+        // select the coefficients based on the activity type
+        HashMap<TransportMode, Integer> alpha = null;
+        HashMap<TransportMode, Double> betaTime = null;
+        HashMap<TransportMode, Double> betaCost = null;
 
+        if (departureType.equals(ActivityType.WORK) | arrivalType.equals(ActivityType.WORK)) {
+            alpha = alphaWork;
+            betaTime = betaTimeWork;
+            betaCost = betaCostWork;
+        } else if (departureType.equals(ActivityType.SCHOOL) | arrivalType.equals(ActivityType.SCHOOL)) {
+            alpha = alphaSchool;
+            betaTime = betaTimeSchool;
+            betaCost = betaCostSchool;
+        } else {
+            alpha = alphaLeisure;
+            betaTime = betaTimeLeisure;
+            betaCost = betaCostLeisure;
+        }
 
-    public static HashMap<TransportMode, Double> getChoiceProbabilities (HashMap<TransportMode, Integer> travelTimes, HashMap<TransportMode, Double> costs, int nChangesBus, int nChangesTrain, boolean carDriverPossible, boolean carPassengerPossible, boolean trainPossible, boolean busTramPossible, boolean walkPossible, boolean bikePossible, int walkTimeBus, int walkTimeTrain) {
         // probability distribution of transport modes
         HashMap<TransportMode, Double> choiceProbabilities = new HashMap<>();
 
@@ -82,22 +144,22 @@ public class MNLModalChoiceModel {
             // can be optimized: walk + bike and car_driver + car_passenger
             switch (transportMode){
                 case WALK:
-                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimes.get(transportMode);
+                    utility_i = alpha.get(TransportMode.WALK) + betaTime.get(TransportMode.WALK) * travelTimes.get(TransportMode.WALK);
                     break;
                 case BIKE:
-                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimes.get(transportMode);
+                    utility_i = alpha.get(TransportMode.BIKE) + betaTime.get(TransportMode.BIKE) * travelTimes.get(TransportMode.BIKE);
                     break;
                 case CAR_DRIVER:
-                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimes.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode);
+                    utility_i = alpha.get(TransportMode.CAR_DRIVER) + betaTime.get(TransportMode.CAR_DRIVER) * travelTimes.get(TransportMode.CAR) + betaCost.get(transportMode) * getCarCost(travelDistances.get(TransportMode.CAR));
                     break;
                 case CAR_PASSENGER:
-                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimes.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode);
+                    utility_i = alpha.get(TransportMode.CAR_PASSENGER) + betaTime.get(TransportMode.CAR_PASSENGER) * travelTimes.get(TransportMode.CAR) + betaCost.get(transportMode) * getCarCost(travelDistances.get(TransportMode.CAR));
                     break;
                 case BUS_TRAM:
-                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimes.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode) + betaTimeWalkBus * walkTimeBus + betaChangesBus * nChangesBus;
+                    utility_i = alpha.get(TransportMode.BUS_TRAM) + betaTime.get(TransportMode.BUS_TRAM) * travelTimes.get(TransportMode.BUS_TRAM) + betaCost.get(TransportMode.BUS_TRAM) * getBusCost(travelDistances.get(TransportMode.BUS_TRAM)) + betaTimeWalkBus * walkTimeBus + betaChangesBus * nChangesBus;
                     break;
                 case TRAIN:
-                    utility_i = alpha.get(transportMode) + betaTime.get(transportMode) * travelTimes.get(transportMode) + betaCost.get(transportMode) * costs.get(transportMode) + betaChangesTrain + betaTimeWalkTrain * walkTimeTrain * nChangesTrain;
+                    utility_i = alpha.get(TransportMode.TRAIN) + betaTime.get(TransportMode.TRAIN) * travelTimes.get(TransportMode.TRAIN) + betaCost.get(TransportMode.TRAIN) * getTrainCost(travelDistances.get(TransportMode.TRAIN)) + betaTimeWalkTrain * walkTimeTrain + betaChangesTrain * nChangesTrain;
                     break;
                 default:
                     break;
@@ -115,6 +177,16 @@ public class MNLModalChoiceModel {
         }
 
         return choiceProbabilities;
+    }
+
+    private static double getCarCost(double distance) {
+        return distance * CAR_COST_KM;
+    }
+    private static double getTrainCost(double distance) {
+        return distance * TRAIN_COST_KM;
+    }
+    private static double getBusCost(double distance) {
+        return distance * BUS_COST_KM;
     }
 
 }
