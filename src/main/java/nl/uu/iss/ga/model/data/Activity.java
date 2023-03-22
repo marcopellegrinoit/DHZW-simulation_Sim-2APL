@@ -86,4 +86,8 @@ public class Activity {
     public ActivityTime getEndTime() {
         return endTime;
     }
+
+    public int getIntegerStartTime (){
+        return this.getStartTime().getSeconds();
+    }
 }

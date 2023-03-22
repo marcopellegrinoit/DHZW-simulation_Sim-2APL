@@ -150,10 +150,12 @@ public class MNLModalChoiceModel {
                     utility_i = alpha.get(TransportMode.BIKE) + betaTime.get(TransportMode.BIKE) * travelTimes.get(TransportMode.BIKE);
                     break;
                 case CAR_DRIVER:
-                    utility_i = alpha.get(TransportMode.CAR_DRIVER) + betaTime.get(TransportMode.CAR_DRIVER) * travelTimes.get(TransportMode.CAR) + betaCost.get(transportMode) * getCarCost(travelDistances.get(TransportMode.CAR));
+                    utility_i = alpha.get(TransportMode.CAR_DRIVER) + betaTime.get(TransportMode.CAR_DRIVER) * travelTimes.get(TransportMode.CAR_DRIVER);
+                    //utility_i = alpha.get(TransportMode.CAR_DRIVER) + betaTime.get(TransportMode.CAR_DRIVER) * travelTimes.get(TransportMode.CAR_DRIVER) + betaCost.get(transportMode) * getCarCost(travelDistances.get(TransportMode.CAR_DRIVER));
                     break;
                 case CAR_PASSENGER:
-                    utility_i = alpha.get(TransportMode.CAR_PASSENGER) + betaTime.get(TransportMode.CAR_PASSENGER) * travelTimes.get(TransportMode.CAR) + betaCost.get(transportMode) * getCarCost(travelDistances.get(TransportMode.CAR));
+                    utility_i = alpha.get(TransportMode.CAR_PASSENGER) + betaTime.get(TransportMode.CAR_PASSENGER) * travelTimes.get(TransportMode.CAR_PASSENGER);
+                    //utility_i = alpha.get(TransportMode.CAR_PASSENGER) + betaTime.get(TransportMode.CAR_PASSENGER) * travelTimes.get(TransportMode.CAR_PASSENGER) + betaCost.get(transportMode) * getCarCost(travelDistances.get(TransportMode.CAR_PASSENGER));
                     break;
                 case BUS_TRAM:
                     utility_i = alpha.get(TransportMode.BUS_TRAM) + betaTime.get(TransportMode.BUS_TRAM) * travelTimes.get(TransportMode.BUS_TRAM) + betaCost.get(TransportMode.BUS_TRAM) * getBusCost(travelDistances.get(TransportMode.BUS_TRAM)) + betaTimeWalkBus * walkTimeBus + betaChangesBus * nChangesBus;

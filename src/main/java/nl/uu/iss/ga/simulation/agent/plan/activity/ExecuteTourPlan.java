@@ -4,6 +4,8 @@ import main.java.nl.uu.iss.ga.model.data.*;
 import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 
+import main.java.nl.uu.iss.ga.model.data.dictionary.TwoStringKeys;
+import main.java.nl.uu.iss.ga.simulation.agent.context.RoutingBeliefContext;
 import main.java.nl.uu.iss.ga.util.CumulativeDistribution;
 import main.java.nl.uu.iss.ga.util.MNLModalChoiceModel;
 import main.java.nl.uu.iss.ga.util.SortBasedOnMessageId;
@@ -68,6 +70,8 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
 
         Person person = planToAgentInterface.getContext(Person.class);
 
+        RoutingBeliefContext routingData = planToAgentInterface.getContext(RoutingBeliefContext.class);
+
         /**
          *  generation of transport mode for each trip
          */
@@ -86,18 +90,43 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
             this.travelTimes.clear();
             this.travelDistances.clear();
 
-            // not entirely outside DHZW
-            if (activityOrigin.getLocation().isInDHZW() & activityDestination.getLocation().isInDHZW()) {
-//            if (activityOrigin.getLocation().isInsideDHZW() | activityDestination.getLocation().isInsideDHZW()) {
-                // calculate the time for:
-                // car only
-                // bike only
-                // foot only
+            // not entirely outside DHZW and the postcodes are different
+            if ((activityOrigin.getLocation().isInDHZW() | activityDestination.getLocation().isInDHZW()) & (!activityOrigin.getLocation().getPostcode().equals(activityDestination.getLocation().getPostcode()))) {
+                TwoStringKeys simmetricPostcodes = new TwoStringKeys(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
 
-                // calculate time and distance for car
-                // apply it to car passenger
+
+                if(routingData.getWalkTimes().get(simmetricPostcodes) == -1.0) {
+                    walkPossible = false;
+                } else {
+                    walkPossible = true;
+                    this.travelTimes.put(TransportMode.WALK, routingData.getWalkTimes().get(simmetricPostcodes));
+                    this.travelDistances.put(TransportMode.WALK, routingData.getWalkDistances().get(simmetricPostcodes));
+                }
+
+                if(routingData.getBikeTimes().get(simmetricPostcodes) == -1.0) {
+                    bikePossible = false;
+                } else {
+                    bikePossible = true;
+                    this.travelTimes.put(TransportMode.BIKE, routingData.getBikeTimes().get(simmetricPostcodes));
+                    this.travelDistances.put(TransportMode.BIKE, routingData.getBikeDistances().get(simmetricPostcodes));
+                }
+
+                if(routingData.getCarTimes().get(simmetricPostcodes) == -1.0) {
+                    carPassengerPossible = false;
+                } else {
+                    carPassengerPossible = true;
+                    this.travelTimes.put(TransportMode.CAR_PASSENGER, routingData.getCarTimes().get(simmetricPostcodes));
+                    this.travelDistances.put(TransportMode.CAR_PASSENGER, routingData.getCarDistances().get(simmetricPostcodes));
+                }
+
                 if(this.carDriverPossible) {
-                    // apply it for car driver
+                    // check if the trip is feasible by car
+                    if(this.carPassengerPossible) {
+                        this.travelTimes.put(TransportMode.CAR_DRIVER, routingData.getCarTimes().get(simmetricPostcodes));
+                        this.travelDistances.put(TransportMode.CAR_DRIVER, routingData.getCarDistances().get(simmetricPostcodes));
+                    } else {
+                        this.carDriverPossible = false;
+                    }
                 }
 
                 // if it is possible by bus, calculate the time
@@ -105,7 +134,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                 // else
                 //  busPossible = false;
 
-                // if the trip is partially outside, the train is an option
+                // if the trip is partially outside, the train could be possible
                 if (!(activityOrigin.getLocation().isInDHZW() & activityDestination.getLocation().isInDHZW())) {
                     // calculate the time for:
                     // train + walk + bike

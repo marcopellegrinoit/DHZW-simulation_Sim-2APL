@@ -6,6 +6,7 @@ import main.java.nl.uu.iss.ga.model.data.ActivitySchedule;
 import main.java.nl.uu.iss.ga.model.data.TripTour;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
+import main.java.nl.uu.iss.ga.model.data.dictionary.TwoStringKeys;
 import main.java.nl.uu.iss.ga.model.reader.*;
 import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
@@ -115,9 +116,16 @@ public class ConfigModel {
                     platform.getHost(), platform.getPort(), null, null, null);
             AgentID aid = new AgentID(uri);
             Agent<TripTour> agent = new Agent<>(platform, arguments, aid);
+            this.agents.add(aid);
+            beliefContext.setAgentID(aid);
+            routingBeliefContext.setAgentID(aid);
 
             long pid = schedule.getPid();
             long hid = schedule.getHid();
+
+            List <Activity> weekSchedule = new ArrayList<>(schedule.getSchedule().values());
+
+            List<String> postcodesVisited = new ArrayList<>();
 
             // loop into days of the week to split activities into each day
             for (DayOfWeek day: DayOfWeek.values()) {
@@ -130,25 +138,37 @@ public class ConfigModel {
                 if(activitiesInDay.size()>1){
                     // initialise the new chain
                     ActivityTour activityTour = new ActivityTour(pid, hid, day);
-                    activityTour.addActivity(activitiesInDay.get(0));
+
+                    Activity previousActivity = activitiesInDay.get(0);
+                    activityTour.addActivity(previousActivity);
 
                     // loop through all the activities of the day
                     for (Activity nextActivity: activitiesInDay.subList(1, activitiesInDay.size())) {
                         activityTour.addActivity(nextActivity);
 
+                        // add the routing information to the belief
+                        if(!previousActivity.getLocation().getPostcode().equals(nextActivity.getLocation().getPostcode()) & (previousActivity.getLocation().isInDHZW() | nextActivity.getLocation().isInDHZW())){
+                            TwoStringKeys key = new TwoStringKeys(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode());
+                            routingBeliefContext.addWalkTime(key, this.routingWalkReader.getTravelTime(key));
+                            routingBeliefContext.addBikeTime(key, this.routingBikeReader.getTravelTime(key));
+                            routingBeliefContext.addCarTime(key, this.routingCarReader.getTravelTime(key));
+                            routingBeliefContext.addWalkDistance(key, this.routingWalkReader.getDistance(key));
+                            routingBeliefContext.addBikeDistance(key, this.routingBikeReader.getDistance(key));
+                            routingBeliefContext.addCarDistance(key, this.routingCarReader.getDistance(key));
+                        }
+
                         // if it comes back home the tour closes and start a new one
                         if (nextActivity.getActivityType().equals(ActivityType.HOME)){
-                                agent.adoptGoal(activityTour);
-                                activityTour = new ActivityTour(pid, hid, day);
-                                activityTour.addActivity(nextActivity);
-                            }
+                            agent.adoptGoal(activityTour);
+                            activityTour = new ActivityTour(pid, hid, day);
+                            activityTour.addActivity(nextActivity);
+                        }
+
+                        previousActivity = nextActivity;
                     }
                 }
             }
 
-            this.agents.add(aid);
-            beliefContext.setAgentID(aid);
-            routingBeliefContext.setAgentID(aid);
         } catch (URISyntaxException e) {
             LOGGER.log(Level.SEVERE, "Failed to create AgentID for agent " + schedule.getPid(), e);
         }

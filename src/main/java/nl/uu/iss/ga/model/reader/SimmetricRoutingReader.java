@@ -39,13 +39,20 @@ public class SimmetricRoutingReader {
         TwoStringKeys key = new TwoStringKeys(location1, location2);
         return travelTimes.get(key);
     }
+    public Double getTravelTime(TwoStringKeys key) {
+        return travelTimes.get(key);
+    }
 
     public Double getDistance(String location1, String location2) {
         TwoStringKeys key = new TwoStringKeys(location1, location2);
         return distances.get(key);
     }
 
-    public HashMap<TwoStringKeys, Double> getTravelTimesFrom(List<String> locations) {
+    public Double getDistance(TwoStringKeys key) {
+        return distances.get(key);
+    }
+
+/*    public HashMap<TwoStringKeys, Double> getTravelTimesFrom(List<String> locations) {
         return travelTimes.entrySet().stream()
                 .filter(entry -> locations.contains(entry.getKey().getKey1()) || locations.contains(entry.getKey().getKey2()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> v1, HashMap::new));
@@ -55,7 +62,7 @@ public class SimmetricRoutingReader {
         return distances.entrySet().stream()
                 .filter(entry -> locations.contains(entry.getKey().getKey1()) || locations.contains(entry.getKey().getKey2()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> v1, HashMap::new));
-    }
+    }*/
 
     private void readTravelTimes(File routingFile) {
         LOGGER.log(Level.INFO, "Reading travel time file " + routingFile.toString());
