@@ -10,7 +10,9 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.TwoStringKeys;
 import main.java.nl.uu.iss.ga.model.reader.*;
 import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
 import main.java.nl.uu.iss.ga.simulation.agent.context.BeliefContext;
-import main.java.nl.uu.iss.ga.simulation.agent.context.RoutingBeliefContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.RoutingSimmetricBeliefContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.RoutingBusBeliefContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.RoutingTrainBeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
 import main.java.nl.uu.iss.ga.util.tracking.ActivityTypeTracker;
 import main.java.nl.uu.iss.ga.util.tracking.ModeOfTransportTracker;
@@ -42,16 +44,20 @@ public class ConfigModel {
     private final List<File> routingWalkFiles;
     private final List<File> routingBikeFiles;
     private final List<File> routingCarFiles;
-    private final List<File> locationDesignationFiles;
+
+    private final List<File> routingBusFiles;
+    //private final List<File> routingTrainFiles;
+
     private final File stateFile;
 
     private HouseholdReader householdReader;
     private PersonReader personReader;
     private ActivityFileReader activityFileReader;
-    private SimmetricRoutingReader routingWalkReader;
-    private SimmetricRoutingReader routingBikeReader;
-    private SimmetricRoutingReader routingCarReader;
-
+    private RoutingSimmetricReader routingWalkReader;
+    private RoutingSimmetricReader routingBikeReader;
+    private RoutingSimmetricReader routingCarReader;
+    private RoutingBusReader routingBusReader;
+    private RoutingTrainReader routingTrainReader;
     private final ArgParse arguments;
     private final TomlTable table;
     private final String name;
@@ -70,9 +76,10 @@ public class ConfigModel {
         this.routingWalkFiles = getFiles("routing_walk", true);
         this.routingBikeFiles = getFiles("routing_bike", true);
         this.routingCarFiles = getFiles("routing_car", true);
+        this.routingBusFiles = getFiles("routing_bus_tram", true);
+        //this.routingTrainFiles = getFiles("routing_train", true);
 
         this.stateFile = getFile("statefile", false);
-        this.locationDesignationFiles = getFiles("locationDesignations", false);
 
         if(this.table.contains("seed")) {
             this.random = new Random(table.getLong("seed"));
@@ -91,9 +98,13 @@ public class ConfigModel {
         );
         this.personReader = new PersonReader(this.personFiles, this.householdReader.getHouseholds());
         this.activityFileReader = new ActivityFileReader(this.activityFiles);
-        this.routingWalkReader = new SimmetricRoutingReader(this.routingWalkFiles);
-        this.routingBikeReader = new SimmetricRoutingReader(this.routingBikeFiles);
-        this.routingCarReader = new SimmetricRoutingReader(this.routingCarFiles);
+
+        this.routingWalkReader = new RoutingSimmetricReader(this.routingWalkFiles);
+        this.routingBikeReader = new RoutingSimmetricReader(this.routingBikeFiles);
+        this.routingCarReader = new RoutingSimmetricReader(this.routingCarFiles);
+
+        this.routingBusReader = new RoutingBusReader(this.routingBusFiles);
+        //this.routingTrainReader = new RoutingTrainReader(this.routingTrainFiles);
     }
 
     public void createAgents(Platform platform, EnvironmentInterface environmentInterface, ModeOfTransportTracker modeOfTransportTracker, ActivityTypeTracker activityTypeTracker) {
@@ -103,13 +114,17 @@ public class ConfigModel {
     }
     private void createAgentFromSchedule(Platform platform, EnvironmentInterface environmentInterface, ActivitySchedule schedule, ModeOfTransportTracker modeOfTransportTracker, ActivityTypeTracker activityTypeTracker) {
         BeliefContext beliefContext = new BeliefContext(environmentInterface, modeOfTransportTracker, activityTypeTracker);
-        RoutingBeliefContext routingBeliefContext = new RoutingBeliefContext(environmentInterface);
+        RoutingSimmetricBeliefContext routingSimmetricBeliefContext = new RoutingSimmetricBeliefContext(environmentInterface);
+        RoutingBusBeliefContext routingBusBeliefContext = new RoutingBusBeliefContext(environmentInterface);
+        RoutingTrainBeliefContext routingTrainBeliefContext = new RoutingTrainBeliefContext(environmentInterface);
 
         AgentArguments<TripTour> arguments = new AgentArguments<TripTour>()
                 .addContext(this.personReader.getPersons().get(schedule.getPid()))
                 .addContext(schedule)
                 .addContext(beliefContext)
-                .addContext(routingBeliefContext)
+                .addContext(routingSimmetricBeliefContext)
+                .addContext(routingBusBeliefContext)
+                .addContext(routingTrainBeliefContext)
                 .addGoalPlanScheme(new GoalPlanScheme());
         try {
             URI uri = new URI(null, String.format("agent-%04d", schedule.getPid()),
@@ -118,7 +133,9 @@ public class ConfigModel {
             Agent<TripTour> agent = new Agent<>(platform, arguments, aid);
             this.agents.add(aid);
             beliefContext.setAgentID(aid);
-            routingBeliefContext.setAgentID(aid);
+            routingSimmetricBeliefContext.setAgentID(aid);
+            routingBusBeliefContext.setAgentID(aid);
+            routingTrainBeliefContext.setAgentID(aid);
 
             long pid = schedule.getPid();
             long hid = schedule.getHid();
@@ -148,13 +165,33 @@ public class ConfigModel {
 
                         // add the routing information to the belief
                         if(!previousActivity.getLocation().getPostcode().equals(nextActivity.getLocation().getPostcode()) & (previousActivity.getLocation().isInDHZW() | nextActivity.getLocation().isInDHZW())){
+                            // add walk, bike and car routing data
                             TwoStringKeys key = new TwoStringKeys(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode());
-                            routingBeliefContext.addWalkTime(key, this.routingWalkReader.getTravelTime(key));
-                            routingBeliefContext.addBikeTime(key, this.routingBikeReader.getTravelTime(key));
-                            routingBeliefContext.addCarTime(key, this.routingCarReader.getTravelTime(key));
-                            routingBeliefContext.addWalkDistance(key, this.routingWalkReader.getDistance(key));
-                            routingBeliefContext.addBikeDistance(key, this.routingBikeReader.getDistance(key));
-                            routingBeliefContext.addCarDistance(key, this.routingCarReader.getDistance(key));
+                            routingSimmetricBeliefContext.addWalkTime(key, this.routingWalkReader.getTravelTime(key));
+                            routingSimmetricBeliefContext.addBikeTime(key, this.routingBikeReader.getTravelTime(key));
+                            routingSimmetricBeliefContext.addCarTime(key, this.routingCarReader.getTravelTime(key));
+                            routingSimmetricBeliefContext.addWalkDistance(key, this.routingWalkReader.getDistance(key));
+                            routingSimmetricBeliefContext.addBikeDistance(key, this.routingBikeReader.getDistance(key));
+                            routingSimmetricBeliefContext.addCarDistance(key, this.routingCarReader.getDistance(key));
+
+                            // add bus routing data
+/*
+                            routingBusBeliefContext.addBusTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingBusReader.getBusTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+                            routingBusBeliefContext.addBusDistance(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingBusReader.getBusDistance(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+                            routingBusBeliefContext.addWalkTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingBusReader.getWalkTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+                            routingBusBeliefContext.addChanges(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingBusReader.getChange(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+                            routingBusBeliefContext.addPostcodeStop(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingBusReader.getPostcodeStop(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+
+                            // add train routing data
+                            routingTrainBeliefContext.addTrainTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingTrainReader.getTrainTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+                            routingTrainBeliefContext.addTrainDistance(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingTrainReader.getTrainDistance(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+                            routingTrainBeliefContext.addBusTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingTrainReader.getBusTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+                            routingTrainBeliefContext.addBusDistance(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingTrainReader.getBusDistance(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+                            routingTrainBeliefContext.addWalkTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingTrainReader.getWalkTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+                            routingTrainBeliefContext.addChanges(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingTrainReader.getChange(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+                            routingTrainBeliefContext.addPostcodeStop(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingTrainReader.getPostcodeStop(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+*/
+
                         }
 
                         // if it comes back home the tour closes and start a new one

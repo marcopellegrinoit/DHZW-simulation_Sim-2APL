@@ -1,6 +1,5 @@
 package main.java.nl.uu.iss.ga.model.reader;
 
-import com.opencsv.bean.CsvBindByName;
 import com.opencsv.exceptions.CsvValidationException;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TwoStringKeys;
 
@@ -8,18 +7,17 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import com.opencsv.CSVReader;
 
-public class SimmetricRoutingReader {
+public class RoutingSimmetricReader {
 
-    private static final Logger LOGGER = Logger.getLogger(SimmetricRoutingReader.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RoutingSimmetricReader.class.getName());
     private final HashMap<TwoStringKeys, Double> travelTimes;
     private final HashMap<TwoStringKeys, Double> distances;
 
 
-    public SimmetricRoutingReader(List<File> routingFile) {
+    public RoutingSimmetricReader(List<File> routingFile) {
         this.travelTimes = new HashMap<>();
         this.distances = new HashMap<>();
         for(File f : routingFile) {

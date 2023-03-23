@@ -1,27 +1,17 @@
 package main.java.nl.uu.iss.ga.simulation.agent.plan.activity;
 
 import main.java.nl.uu.iss.ga.model.data.*;
-import main.java.nl.uu.iss.ga.model.data.dictionary.LocationEntry;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 
 import main.java.nl.uu.iss.ga.model.data.dictionary.TwoStringKeys;
-import main.java.nl.uu.iss.ga.simulation.agent.context.RoutingBeliefContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.RoutingBusBeliefContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.RoutingSimmetricBeliefContext;
+import main.java.nl.uu.iss.ga.simulation.agent.context.RoutingTrainBeliefContext;
 import main.java.nl.uu.iss.ga.util.CumulativeDistribution;
 import main.java.nl.uu.iss.ga.util.MNLModalChoiceModel;
-import main.java.nl.uu.iss.ga.util.SortBasedOnMessageId;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.PlanToAgentInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.plan.builtin.RunOncePlan;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -32,20 +22,6 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
     private static final Logger LOGGER = Logger.getLogger(ExecuteTourPlan.class.getName());
     private final ActivityTour activityTour;
     private TripTour tripTour;
-    private HashMap<TransportMode, Double> travelTimes;
-    private HashMap<TransportMode, Double> travelDistances;
-    private int nChangesBus;
-    private int nChangesTrain;
-    private int walkTimeBus;
-    private int walkTimeTrain;
-
-    private boolean trainPossible;
-    private boolean busPossible;
-    private boolean walkPossible;
-    private boolean bikePossible ;
-    private boolean carDriverPossible;
-    private boolean carPassengerPossible;
-
     private final long pid;
     private final long hid;
 
@@ -63,14 +39,30 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
      */
     @Override
     public TripTour executeOnce(PlanToAgentInterface<TripTour> planToAgentInterface) {
-        this.travelTimes = new HashMap<TransportMode, Double>();
-        this.travelDistances = new HashMap<TransportMode, Double>();
-        this.walkTimeBus = 0;
-        this.walkTimeTrain = 0;
+        HashMap<TransportMode, Double> travelTimes = new HashMap<TransportMode, Double>();
+        HashMap<TransportMode, Double> travelDistances = new HashMap<TransportMode, Double>();
+
+        int nChangesBus = 0;
+        int nChangesTrain = 0;
+        double walkTimeBus = 0;
+        double walkTimeTrain = 0;
+        double busTimeTrain = 0;
+        double busDistanceTrain = 0;
+        String postcodeStopBus = null;
+        String postcodeStopTrain = null;
+
+        boolean trainPossible  = false;
+        boolean busPossible = false;
+        boolean walkPossible  = false;
+        boolean bikePossible = false;
+        boolean carDriverPossible = false;
+        boolean carPassengerPossible = false;
 
         Person person = planToAgentInterface.getContext(Person.class);
 
-        RoutingBeliefContext routingData = planToAgentInterface.getContext(RoutingBeliefContext.class);
+        RoutingSimmetricBeliefContext routingSimmetric = planToAgentInterface.getContext(RoutingSimmetricBeliefContext.class);
+        RoutingBusBeliefContext routingBus = planToAgentInterface.getContext(RoutingBusBeliefContext.class);
+        RoutingTrainBeliefContext routingTrain = planToAgentInterface.getContext(RoutingTrainBeliefContext.class);
 
         /**
          *  generation of transport mode for each trip
@@ -82,78 +74,98 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
 
         // for each destination (starting from the second one) there is a trip
         for (Activity activityDestination : activities.subList(1, activities.size())) {
-            //todo change to true
-            this.trainPossible = false;
-            this.carDriverPossible = person.hasCarLicense() & person.getHousehold().hasCarOwnership();
-            this.nChangesBus = 0;
-            this.nChangesTrain = 0;
-            this.travelTimes.clear();
-            this.travelDistances.clear();
-
             // not entirely outside DHZW and the postcodes are different
             if ((activityOrigin.getLocation().isInDHZW() | activityDestination.getLocation().isInDHZW()) & (!activityOrigin.getLocation().getPostcode().equals(activityDestination.getLocation().getPostcode()))) {
+                // reset flags for the upcoming trip
+                travelTimes.clear();
+                travelDistances.clear();
+                carDriverPossible = person.hasCarLicense() & person.getHousehold().hasCarOwnership();
+
                 TwoStringKeys simmetricPostcodes = new TwoStringKeys(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
 
-
-                if(routingData.getWalkTimes().get(simmetricPostcodes) == -1.0) {
+                if(routingSimmetric.getWalkTime(simmetricPostcodes) == -1.0) {
                     walkPossible = false;
                 } else {
                     walkPossible = true;
-                    this.travelTimes.put(TransportMode.WALK, routingData.getWalkTimes().get(simmetricPostcodes));
-                    this.travelDistances.put(TransportMode.WALK, routingData.getWalkDistances().get(simmetricPostcodes));
+                    travelTimes.put(TransportMode.WALK, routingSimmetric.getWalkTime(simmetricPostcodes));
+                    travelDistances.put(TransportMode.WALK, routingSimmetric.getWalkDistance(simmetricPostcodes));
                 }
 
-                if(routingData.getBikeTimes().get(simmetricPostcodes) == -1.0) {
+                if(routingSimmetric.getBikeTime(simmetricPostcodes) == -1.0) {
                     bikePossible = false;
                 } else {
                     bikePossible = true;
-                    this.travelTimes.put(TransportMode.BIKE, routingData.getBikeTimes().get(simmetricPostcodes));
-                    this.travelDistances.put(TransportMode.BIKE, routingData.getBikeDistances().get(simmetricPostcodes));
+                    travelTimes.put(TransportMode.BIKE, routingSimmetric.getBikeTime(simmetricPostcodes));
+                    travelDistances.put(TransportMode.BIKE, routingSimmetric.getBikeDistance(simmetricPostcodes));
                 }
 
-                if(routingData.getCarTimes().get(simmetricPostcodes) == -1.0) {
+                if(routingSimmetric.getCarTime(simmetricPostcodes) == -1.0) {
                     carPassengerPossible = false;
                 } else {
                     carPassengerPossible = true;
-                    this.travelTimes.put(TransportMode.CAR_PASSENGER, routingData.getCarTimes().get(simmetricPostcodes));
-                    this.travelDistances.put(TransportMode.CAR_PASSENGER, routingData.getCarDistances().get(simmetricPostcodes));
+                    travelTimes.put(TransportMode.CAR_PASSENGER, routingSimmetric.getCarTime(simmetricPostcodes));
+                    travelDistances.put(TransportMode.CAR_PASSENGER, routingSimmetric.getCarDistance(simmetricPostcodes));
                 }
 
-                if(this.carDriverPossible) {
+                if(carDriverPossible) {
                     // check if the trip is feasible by car
-                    if(this.carPassengerPossible) {
-                        this.travelTimes.put(TransportMode.CAR_DRIVER, routingData.getCarTimes().get(simmetricPostcodes));
-                        this.travelDistances.put(TransportMode.CAR_DRIVER, routingData.getCarDistances().get(simmetricPostcodes));
+                    if(carPassengerPossible) {
+                        travelTimes.put(TransportMode.CAR_DRIVER, routingSimmetric.getCarTime(simmetricPostcodes));
+                        travelDistances.put(TransportMode.CAR_DRIVER, routingSimmetric.getCarDistance(simmetricPostcodes));
                     } else {
-                        this.carDriverPossible = false;
+                        carDriverPossible = false;
                     }
                 }
 
-                // if it is possible by bus, calculate the time
-                //  travelTimes.put(TransportMode.BUS_TRAM, calculateTravelTime(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.BUS_TRAM));
-                // else
-                //  busPossible = false;
+   /*             // if the bus is possible
+                if(routingBus.getBusTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()) == -1.0) {
+                    busPossible = true;
+                    travelTimes.put(TransportMode.BUS_TRAM, routingBus.getBusTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()));
+                    travelDistances.put(TransportMode.BUS_TRAM, routingBus.getBusDistance(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()));
+                    nChangesBus = routingBus.getChange(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
+                    walkTimeBus = routingBus.getWalkTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
+                    postcodeStopBus = routingBus.getPostcodeDHZW(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
+                } else {
+                    busPossible = false;
+                }
 
                 // if the trip is partially outside, the train could be possible
                 if (!(activityOrigin.getLocation().isInDHZW() & activityDestination.getLocation().isInDHZW())) {
-                    // calculate the time for:
-                    // train + walk + bike
-
-                    // if it is possible by train
-                    //  calculate the time
-                    //  travelTimes.put(TransportMode.TRAIN, calculateTravelTime(activityOrigin.getLocation(), activityDestination.getLocation(), TransportMode.TRAIN));
-                    // else
-                    //  trainPossible = false;
-                }
+                    if(routingTrain.getTrainTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()) == -1.0) {
+                        trainPossible = true;
+                        travelTimes.put(TransportMode.TRAIN, routingTrain.getTrainTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()));
+                        travelDistances.put(TransportMode.TRAIN, routingTrain.getTrainDistance(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()));
+                        nChangesTrain = routingTrain.getChange(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
+                        walkTimeTrain = routingTrain.getWalkTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
+                        busTimeTrain = routingTrain.getBusTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
+                        busDistanceTrain = routingTrain.getBusDistance(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
+                        postcodeStopTrain = routingTrain.getPostcodeDHZW(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
+                    } else {
+                        trainPossible = false;
+                    }
+                }*/
 
                 // compute choice probabilities
-                HashMap<TransportMode, Double> choiceProbabilities = MNLModalChoiceModel.getChoiceProbabilities(this.travelTimes, this.travelDistances, this.nChangesBus, this.nChangesTrain, this.carDriverPossible, this.carPassengerPossible, this.trainPossible, this.busPossible, this.walkPossible, this.bikePossible, this.walkTimeBus, this.walkTimeTrain, activityOrigin.getActivityType(), activityDestination.getActivityType());
+                HashMap<TransportMode, Double> choiceProbabilities = MNLModalChoiceModel.getChoiceProbabilities(
+                        walkPossible,
+                        bikePossible,
+                        carDriverPossible,
+                        carPassengerPossible,
+                        busPossible,
+                        trainPossible,
+                        travelTimes,
+                        travelDistances,
+                        walkTimeBus,
+                        nChangesBus,
+                        walkTimeTrain,
+                        busTimeTrain,
+                        busDistanceTrain,
+                        nChangesTrain,
+                        activityOrigin.getActivityType(),
+                        activityDestination.getActivityType());
 
                 // decide the modal choice
                 TransportMode transportMode = CumulativeDistribution.sampleWithCumulativeDistribution(choiceProbabilities);
-
-                double travelTime = travelTimes.get(transportMode);
-                double travelDistance = travelDistances.get(transportMode);
 
                 // add the trip to the tour
                 Trip trip = new Trip(this.pid,
@@ -165,9 +177,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                         activityOrigin.getStartTime(),
                         activityOrigin.getEndTime(),
                         activityDestination.getStartTime(),
-                        transportMode,
-                        travelTime,
-                        travelDistance);
+                        transportMode);
 
                 this.tripTour.addTrip(trip);
 

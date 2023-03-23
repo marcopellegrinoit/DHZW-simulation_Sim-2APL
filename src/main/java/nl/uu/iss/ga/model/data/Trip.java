@@ -20,10 +20,8 @@ public class Trip {
     private final ActivityTime nextActivityStartTime;
     private final int activityTimeGap;
     private TransportMode transportMode;
-    private double travelTime;
-    private double travelDistance;
 
-    public Trip(long pid, long hid, ActivityType departureActivityType, ActivityType arrivalActivityType, String departurePostcode, String arrivalPostcode, ActivityTime previousActivityStartTime, ActivityTime previousActivityEndTime, ActivityTime nextActivityStartTime, TransportMode transportMode, double travelTime, double travelDistance) {
+    public Trip(long pid, long hid, ActivityType departureActivityType, ActivityType arrivalActivityType, String departurePostcode, String arrivalPostcode, ActivityTime previousActivityStartTime, ActivityTime previousActivityEndTime, ActivityTime nextActivityStartTime, TransportMode transportMode) {
         this.pid = pid;
         this.hid = hid;
         this.departureActivityType = departureActivityType;
@@ -35,8 +33,6 @@ public class Trip {
         this.nextActivityStartTime = nextActivityStartTime;
         this.activityTimeGap = nextActivityStartTime.getSeconds() - previousActivityEndTime.getSeconds();
         this.transportMode = transportMode;
-        this.travelTime = travelTime;
-        this.travelDistance = travelDistance;
     }
 
     @Override
@@ -51,8 +47,6 @@ public class Trip {
                 ", postcode = " + this.arrivalPostcode +
                 " (starts at " + this.nextActivityStartTime +
                 "). [mode:" + this.transportMode +
-                " - time: " + this.travelTime + " mins" +
-                " - distance: " + this.travelDistance + " km" +
                 "]}";
     }
 
@@ -110,14 +104,8 @@ public class Trip {
         return activityTimeGap;
     }
 
-    public double getTravelTime(){return this.travelTime;}
-
-    public double getTravelDistance(){return this.travelDistance;}
 
     public TransportMode getTransportMode(){return this.transportMode;}
-    public void setTravelTime(int travelTime){this.travelTime = travelTime;}
-
-    public void setTravelDistance(int travelDistance){this.travelDistance = travelDistance;}
 
     public void setTransportMode(TransportMode transportMode){this.transportMode = transportMode;}
 

@@ -3,8 +3,6 @@ package main.java.nl.uu.iss.ga.simulation.agent.context;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TwoStringKeys;
 import main.java.nl.uu.iss.ga.simulation.EnvironmentInterface;
-import main.java.nl.uu.iss.ga.util.tracking.ActivityTypeTracker;
-import main.java.nl.uu.iss.ga.util.tracking.ModeOfTransportTracker;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
 
@@ -13,10 +11,9 @@ import java.util.HashMap;
 /**
  * Stores agents general beliefs
  */
-public class RoutingBeliefContext implements Context {
+public class RoutingSimmetricBeliefContext implements Context {
     private AgentID me;
     private final EnvironmentInterface environmentInterface;
-
     private HashMap<TwoStringKeys, Double> walkTimes;
     private HashMap<TwoStringKeys, Double> bikeTimes;
     private HashMap<TwoStringKeys, Double> carTimes;
@@ -24,7 +21,7 @@ public class RoutingBeliefContext implements Context {
     private HashMap<TwoStringKeys, Double> bikeDistances;
     private HashMap<TwoStringKeys, Double> carDistances;
 
-    public RoutingBeliefContext(EnvironmentInterface environmentInterface) {
+    public RoutingSimmetricBeliefContext(EnvironmentInterface environmentInterface) {
         this.environmentInterface = environmentInterface;
         this.walkTimes = new HashMap<TwoStringKeys, Double>();
         this.walkDistances = new HashMap<TwoStringKeys, Double>();
@@ -46,28 +43,28 @@ public class RoutingBeliefContext implements Context {
         return this.environmentInterface.getCurrentTick();
     }
 
-    public HashMap<TwoStringKeys, Double> getWalkTimes() {
-        return walkTimes;
+    //******************************************************************************************************************
+    public double getWalkTime(TwoStringKeys key){
+        return this.walkTimes.get(key);
     }
-    public HashMap<TwoStringKeys, Double> getBikeTimes() {
-        return bikeTimes;
+    public double getWalkDistance(TwoStringKeys key){
+        return this.walkDistances.get(key);
+    }
+    public double getBikeTime(TwoStringKeys key){
+        return this.bikeTimes.get(key);
+    }
+    public double getBikeDistance(TwoStringKeys key){
+        return this.bikeDistances.get(key);
+    }
+    public double getCarTime(TwoStringKeys key){
+        return this.carTimes.get(key);
+    }
+    public double getCarDistance(TwoStringKeys key){
+        return this.carDistances.get(key);
     }
 
-    public HashMap<TwoStringKeys, Double> getCarTimes() {
-        return carTimes;
-    }
+    //******************************************************************************************************************
 
-    public HashMap<TwoStringKeys, Double> getWalkDistances() {
-        return walkDistances;
-    }
-
-    public HashMap<TwoStringKeys, Double> getBikeDistances() {
-        return bikeDistances;
-    }
-
-    public HashMap<TwoStringKeys, Double> getCarDistances() {
-        return carDistances;
-    }
 
     public void addWalkTime(TwoStringKeys key, double time) {
         if(!walkTimes.containsKey(key)) {
@@ -85,19 +82,20 @@ public class RoutingBeliefContext implements Context {
         }
     }
 
-    public void addWalkDistance(TwoStringKeys key, double time) {
+    public void addWalkDistance(TwoStringKeys key, double distance) {
         if(!walkDistances.containsKey(key)) {
-            this.walkDistances.put(key, time);
+            this.walkDistances.put(key, distance);
         }
     }
-    public void addBikeDistance(TwoStringKeys key, double time) {
+    public void addBikeDistance(TwoStringKeys key, double distance) {
         if(!bikeDistances.containsKey(key)) {
-            this.bikeDistances.put(key, time);
+            this.bikeDistances.put(key, distance);
         }
     }
-    public void addCarDistance(TwoStringKeys key, double time) {
+    public void addCarDistance(TwoStringKeys key, double distance) {
         if(!carDistances.containsKey(key)) {
-            this.carDistances.put(key, time);
+            this.carDistances.put(key, distance);
         }
     }
+
 }
