@@ -117,18 +117,18 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                     }
                 }
 
-   /*             // if the bus is possible
-                if(routingBus.getBusTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()) == -1.0) {
-                    busPossible = true;
+
+                // if the bus is possible
+                busPossible = routingBus.getFeasibleFlag(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()) != -1;
+                if(busPossible) {
                     travelTimes.put(TransportMode.BUS_TRAM, routingBus.getBusTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()));
                     travelDistances.put(TransportMode.BUS_TRAM, routingBus.getBusDistance(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()));
                     nChangesBus = routingBus.getChange(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
                     walkTimeBus = routingBus.getWalkTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
                     postcodeStopBus = routingBus.getPostcodeDHZW(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
-                } else {
-                    busPossible = false;
                 }
 
+                /*
                 // if the trip is partially outside, the train could be possible
                 if (!(activityOrigin.getLocation().isInDHZW() & activityDestination.getLocation().isInDHZW())) {
                     if(routingTrain.getTrainTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()) == -1.0) {

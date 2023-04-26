@@ -8,9 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MNLModalChoiceModel {
-    private static final double CAR_COST_KM = 0.5;
-    private static final double TRAIN_COST_KM = 0.5;
-    private static final double BUS_COST_KM = 0.5;
+    private static final double CAR_COST_KM = 0.49; // https://watkosteenauto.nl/wat-kost-een-auto-per-km/#:~:text=ANWB%20heeft%20een%20berekening%20vrijgegeven,middenklas%20auto%20%E2%82%AC0%2C49.
+
+    // https://www.rrreis.nl/nieuwe-tarieven-en-prijzen-vanaf-1-januari-2023#:~:text=De%20totaalprijs%20voor%20reizen%20op,voor%20RRReis%20wordt%20%E2%82%AC%200%2C196.
+    private static final double PUBLIC_TRANSPORT_COST_KM = 0.2;
+    private static final double PUBLIC_TRANSPORT_BASE_FEE = 1.08;
     private static final HashMap<TransportMode, Integer> alphaWork = new HashMap<>();
     private static final HashMap<TransportMode, Double> betaTimeWork = new HashMap<>();
     private static final HashMap<TransportMode, Double> betaCostWork = new HashMap<>();
@@ -167,26 +169,26 @@ public class MNLModalChoiceModel {
                     utility_i = alpha.get(TransportMode.BIKE) + betaTime.get(TransportMode.BIKE) * travelTimes.get(TransportMode.BIKE);
                     break;
                 case CAR_DRIVER:
-                    utility_i = alpha.get(TransportMode.CAR_DRIVER) + betaTime.get(TransportMode.CAR_DRIVER) * travelTimes.get(TransportMode.CAR_DRIVER);
-                    //utility_i = alpha.get(TransportMode.CAR_DRIVER) + betaTime.get(TransportMode.CAR_DRIVER) * travelTimes.get(TransportMode.CAR_DRIVER) + betaCost.get(transportMode) * getCarCost(travelDistances.get(TransportMode.CAR_DRIVER));
+                    //utility_i = alpha.get(TransportMode.CAR_DRIVER) + betaTime.get(TransportMode.CAR_DRIVER) * travelTimes.get(TransportMode.CAR_DRIVER);
+                    utility_i = alpha.get(TransportMode.CAR_DRIVER) + betaTime.get(TransportMode.CAR_DRIVER) * travelTimes.get(TransportMode.CAR_DRIVER) + betaCost.get(transportMode) * getCarCost(travelDistances.get(TransportMode.CAR_DRIVER));
                     break;
                 case CAR_PASSENGER:
-                    utility_i = alpha.get(TransportMode.CAR_PASSENGER) + betaTime.get(TransportMode.CAR_PASSENGER) * travelTimes.get(TransportMode.CAR_PASSENGER);
-                    //utility_i = alpha.get(TransportMode.CAR_PASSENGER) + betaTime.get(TransportMode.CAR_PASSENGER) * travelTimes.get(TransportMode.CAR_PASSENGER) + betaCost.get(transportMode) * getCarCost(travelDistances.get(TransportMode.CAR_PASSENGER));
+                    // utility_i = alpha.get(TransportMode.CAR_PASSENGER) + betaTime.get(TransportMode.CAR_PASSENGER) * travelTimes.get(TransportMode.CAR_PASSENGER);
+                    utility_i = alpha.get(TransportMode.CAR_PASSENGER) + betaTime.get(TransportMode.CAR_PASSENGER) * travelTimes.get(TransportMode.CAR_PASSENGER) + betaCost.get(transportMode) * getCarCost(travelDistances.get(TransportMode.CAR_PASSENGER));
                     break;
                 case BUS_TRAM:
                     utility_i = alpha.get(TransportMode.BUS_TRAM) +
                             betaTime.get(TransportMode.BUS_TRAM) * travelTimes.get(TransportMode.BUS_TRAM) +
-                            betaCost.get(TransportMode.BUS_TRAM) * getBusCost(travelDistances.get(TransportMode.BUS_TRAM)) +
+                            betaCost.get(TransportMode.BUS_TRAM) * getPublicTransportCost(travelDistances.get(TransportMode.BUS_TRAM)) +
                             betaTimeWalkBus * walkTimeBus +
                             betaChangesBus * nChangesBus;
                     break;
                 case TRAIN:
                     utility_i = alpha.get(TransportMode.TRAIN) +
                             betaTime.get(TransportMode.TRAIN) * travelTimes.get(TransportMode.TRAIN) +
-                            betaCost.get(TransportMode.TRAIN) * getTrainCost(travelDistances.get(TransportMode.TRAIN)) +
+                            betaCost.get(TransportMode.TRAIN) * getPublicTransportCost(travelDistances.get(TransportMode.TRAIN)) +
                             betaTime.get(TransportMode.BUS_TRAM) * busTimeTrain +
-                            betaCost.get(TransportMode.BUS_TRAM) * getBusCost(busDistanceTrain) +
+                            betaCost.get(TransportMode.BUS_TRAM) * getPublicTransportCost(busDistanceTrain) +
                             betaTimeWalkTrain * walkTimeTrain +
                             betaChangesTrain * nChangesTrain;
                     break;
@@ -211,11 +213,9 @@ public class MNLModalChoiceModel {
     private static double getCarCost(double distance) {
         return distance * CAR_COST_KM;
     }
-    private static double getTrainCost(double distance) {
-        return distance * TRAIN_COST_KM;
+    private static double getPublicTransportCost(double distance) {
+        return PUBLIC_TRANSPORT_BASE_FEE + distance * PUBLIC_TRANSPORT_COST_KM;
     }
-    private static double getBusCost(double distance) {
-        return distance * BUS_COST_KM;
-    }
+
 
 }
