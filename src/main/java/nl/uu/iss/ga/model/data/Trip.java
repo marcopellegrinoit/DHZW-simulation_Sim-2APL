@@ -37,17 +37,17 @@ public class Trip {
 
     @Override
     public String toString() {
-        return "Trip{" +
-                "origin_Activity = " + this.departureActivityType +
-                ", postcode = " + this.departurePostcode +
-                " (" + this.previousActivityStartTime +
+        return "[" +
+                this.departureActivityType +
+                ", " + this.departurePostcode +
+                ", " + this.previousActivityStartTime +
                 " - " + this.previousActivityEndTime +
-                ") --> " +
-                "origin_Activity = " + this.arrivalActivityType +
-                ", postcode = " + this.arrivalPostcode +
-                " (starts at " + this.nextActivityStartTime +
-                "). [mode:" + this.transportMode +
-                "]}";
+                "] --> [" +
+                this.arrivalActivityType +
+                ", " + this.arrivalPostcode +
+                ", " + this.nextActivityStartTime +
+                "] - " + this.transportMode +
+                "";
     }
 
 

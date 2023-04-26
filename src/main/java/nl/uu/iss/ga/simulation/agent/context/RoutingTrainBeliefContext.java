@@ -20,6 +20,7 @@ public class RoutingTrainBeliefContext implements Context {
     private HashMap<String, HashMap<String, Double>> walkTimes;
     private HashMap<String, HashMap<String, Integer>> nChanges;
     private HashMap<String, HashMap<String, String>> postcodeStops;
+    private HashMap<String, HashMap<String, Integer>> feasibleFlags;
 
 
     public RoutingTrainBeliefContext(EnvironmentInterface environmentInterface) {
@@ -31,6 +32,7 @@ public class RoutingTrainBeliefContext implements Context {
         this.walkTimes = new HashMap<String, HashMap<String, Double>>();
         this.nChanges = new HashMap<String, HashMap<String, Integer>>();
         this.postcodeStops = new HashMap<String, HashMap<String, String>>();
+        this.feasibleFlags = new HashMap<String, HashMap<String, Integer>>();
     }
 
     public void setAgentID(AgentID me) {
@@ -68,6 +70,9 @@ public class RoutingTrainBeliefContext implements Context {
     }
     public String getPostcodeDHZW(String departure, String arrival){
         return this.postcodeStops.get(departure).get(arrival);
+    }
+    public int getFeasibleFlag(String departure, String arrival){
+        return this.feasibleFlags.get(departure).get(arrival);
     }
 
     //******************************************************************************************************************
@@ -134,6 +139,16 @@ public class RoutingTrainBeliefContext implements Context {
             HashMap<String, String> tmpMap = new HashMap<String, String>();
             tmpMap.put(location2, postcode);
             this.postcodeStops.put(location1, tmpMap);
+        }
+    }
+
+    public void addFeasibleFlag(String location1, String location2, int feasibleFlag) {
+        if(this.feasibleFlags.containsKey(location1)) {
+            this.feasibleFlags.get(location1).put(location2, feasibleFlag);
+        } else {
+            HashMap<String, Integer> tmpMap = new HashMap<String, Integer>();
+            tmpMap.put(location2, feasibleFlag);
+            this.feasibleFlags.put(location1, tmpMap);
         }
     }
 }

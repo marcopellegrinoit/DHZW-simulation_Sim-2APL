@@ -117,7 +117,6 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                     }
                 }
 
-
                 // if the bus is possible
                 busPossible = routingBus.getFeasibleFlag(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()) != -1;
                 if(busPossible) {
@@ -128,11 +127,10 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                     postcodeStopBus = routingBus.getPostcodeDHZW(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
                 }
 
-                /*
                 // if the trip is partially outside, the train could be possible
-                if (!(activityOrigin.getLocation().isInDHZW() & activityDestination.getLocation().isInDHZW())) {
-                    if(routingTrain.getTrainTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()) == -1.0) {
-                        trainPossible = true;
+                if (activityOrigin.getLocation().isInDHZW() ^ activityDestination.getLocation().isInDHZW()) {   // XOR operator
+                    trainPossible = routingTrain.getFeasibleFlag(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()) != -1;
+                    if(trainPossible) {
                         travelTimes.put(TransportMode.TRAIN, routingTrain.getTrainTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()));
                         travelDistances.put(TransportMode.TRAIN, routingTrain.getTrainDistance(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode()));
                         nChangesTrain = routingTrain.getChange(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
@@ -140,10 +138,8 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                         busTimeTrain = routingTrain.getBusTime(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
                         busDistanceTrain = routingTrain.getBusDistance(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
                         postcodeStopTrain = routingTrain.getPostcodeDHZW(activityOrigin.getLocation().getPostcode(), activityDestination.getLocation().getPostcode());
-                    } else {
-                        trainPossible = false;
                     }
-                }*/
+                }
 
                 // compute choice probabilities
                 HashMap<TransportMode, Double> choiceProbabilities = MNLModalChoiceModel.getChoiceProbabilities(
@@ -181,7 +177,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
 
                 this.tripTour.addTrip(trip);
 
-                LOGGER.log(Level.INFO, trip.toString());
+                //LOGGER.log(Level.INFO, trip.toString());
             }
             // update past activity
             activityOrigin = activityDestination;

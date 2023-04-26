@@ -21,7 +21,7 @@ public class RoutingTrainReader {
     private final HashMap<String, HashMap<String, Double>> busDistances;
     private final HashMap<String, HashMap<String, Integer>> nChanges;
     private final HashMap<String, HashMap<String, String>> postcodeStops;
-
+    private final HashMap<String, HashMap<String, Integer>> feasibleFlags;
 
     public RoutingTrainReader(List<File> routingFile) {
         this.trainTimes = new HashMap<>();
@@ -31,6 +31,7 @@ public class RoutingTrainReader {
         this.busDistances = new HashMap<>();
         this.nChanges = new HashMap<>();
         this.postcodeStops = new HashMap<>();
+        this.feasibleFlags = new HashMap<>();
 
         for(File f : routingFile) {
             readTravelTimes(f);
@@ -59,6 +60,9 @@ public class RoutingTrainReader {
     public String getPostcodeStop(String location1, String location2) {
         return this.postcodeStops.get(location1).get(location2);
     }
+    public int getFeasibleFlag(String location1, String location2) {
+        return this.feasibleFlags.get(location1).get(location2);
+    }
 
     private void readTravelTimes(File routingFile) {
         LOGGER.log(Level.INFO, "Reading travel time file " + routingFile.toString());
@@ -75,12 +79,13 @@ public class RoutingTrainReader {
                 String arrival = line[1].trim();
 
                 double walkTime = Double.parseDouble(line[9].trim());
-                double trainTime = Double.parseDouble(line[10].trim());
-                double trainDistance = Double.parseDouble(line[15].trim());
-                double busTime = Double.parseDouble(line[15].trim());
-                double busDistance = Double.parseDouble(line[15].trim());
-                int nChange = Integer.parseInt(line[12].trim());
-                String postcodeStop = line[16].trim();
+                double trainTime = Double.parseDouble(line[11].trim());
+                double trainDistance = Double.parseDouble(line[17].trim());
+                double busTime = Double.parseDouble(line[10].trim());
+                double busDistance = Double.parseDouble(line[16].trim());
+                int nChange = Integer.parseInt(line[13].trim());
+                String postcodeStop = line[19].trim();
+                int feasibleFlag = Integer.parseInt(line[20].trim());
 
                 // Add to the HashMaps
                 if(this.trainTimes.containsKey(departure)) {
@@ -92,6 +97,7 @@ public class RoutingTrainReader {
                     this.busDistances.get(departure).put(arrival, busDistance);
                     this.nChanges.get(departure).put(arrival, nChange);
                     this.postcodeStops.get(departure).put(arrival, postcodeStop);
+                    this.feasibleFlags.get(departure).put(arrival, feasibleFlag);
                 } else {
                     // create the whole structure for such departure node
                     HashMap <String, Double> tmp = new HashMap<String, Double>();
@@ -121,6 +127,10 @@ public class RoutingTrainReader {
                     HashMap <String, String> tmpString = new HashMap<String, String>();
                     tmpString.put(arrival, postcodeStop);
                     this.postcodeStops.put(departure, tmpString);
+
+                    tmpInt.clear();
+                    tmpInt.put(arrival, feasibleFlag);
+                    this.feasibleFlags.put(departure, tmpInt);
                 }
 
             }
