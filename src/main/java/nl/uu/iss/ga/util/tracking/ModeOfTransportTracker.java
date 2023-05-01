@@ -18,7 +18,7 @@ public class ModeOfTransportTracker {
         }
     }
 
-    public void notifyTransportModeUsed(AgentID agentID, TransportMode mode) {
+    public void notifyTransportModeUsed(TransportMode mode) {
         modeTrackerMap.get(mode).getAndIncrement();
     }
 

@@ -20,6 +20,7 @@ public class RoutingSimmetricBeliefContext implements Context {
     private HashMap<TwoStringKeys, Double> walkDistances;
     private HashMap<TwoStringKeys, Double> bikeDistances;
     private HashMap<TwoStringKeys, Double> carDistances;
+    private HashMap<TwoStringKeys, Double> beelineDistances;
 
     public RoutingSimmetricBeliefContext(EnvironmentInterface environmentInterface) {
         this.environmentInterface = environmentInterface;
@@ -29,6 +30,7 @@ public class RoutingSimmetricBeliefContext implements Context {
         this.bikeDistances = new HashMap<TwoStringKeys, Double>();
         this.carTimes = new HashMap<TwoStringKeys, Double>();
         this.carDistances = new HashMap<TwoStringKeys, Double>();
+        this.beelineDistances = new HashMap<TwoStringKeys, Double>();
     }
 
     public void setAgentID(AgentID me) {
@@ -61,6 +63,9 @@ public class RoutingSimmetricBeliefContext implements Context {
     }
     public double getCarDistance(TwoStringKeys key){
         return this.carDistances.get(key);
+    }
+    public double getBeelineDistance(TwoStringKeys key){
+        return this.beelineDistances.get(key);
     }
 
     //******************************************************************************************************************
@@ -95,6 +100,11 @@ public class RoutingSimmetricBeliefContext implements Context {
     public void addCarDistance(TwoStringKeys key, double distance) {
         if(!carDistances.containsKey(key)) {
             this.carDistances.put(key, distance);
+        }
+    }
+    public void addBeelineDistance(TwoStringKeys key, double distance) {
+        if(!beelineDistances.containsKey(key)) {
+            this.beelineDistances.put(key, distance);
         }
     }
 

@@ -41,6 +41,7 @@ public class ConfigModel {
     private final List<File> householdFiles;
     private final List<File> personFiles;
     private final List<File> locationsFiles;
+    private final List<File> beelineDistanceFiles;
     private final List<File> routingWalkFiles;
     private final List<File> routingBikeFiles;
     private final List<File> routingCarFiles;
@@ -56,6 +57,7 @@ public class ConfigModel {
     private RoutingSimmetricReader routingWalkReader;
     private RoutingSimmetricReader routingBikeReader;
     private RoutingSimmetricReader routingCarReader;
+    private BeelineDistanceReader beelineDistanceReader;
     private RoutingBusReader routingBusReader;
     private RoutingTrainReader routingTrainReader;
     private final ArgParse arguments;
@@ -73,6 +75,7 @@ public class ConfigModel {
         this.personFiles = getFiles("persons", true);
         this.locationsFiles = getFiles("locations", false);
 
+        this.beelineDistanceFiles = getFiles("beeline_distance", true);
         this.routingWalkFiles = getFiles("routing_walk", true);
         this.routingBikeFiles = getFiles("routing_bike", true);
         this.routingCarFiles = getFiles("routing_car", true);
@@ -99,6 +102,7 @@ public class ConfigModel {
         this.personReader = new PersonReader(this.personFiles, this.householdReader.getHouseholds());
         this.activityFileReader = new ActivityFileReader(this.activityFiles);
 
+        this.beelineDistanceReader = new BeelineDistanceReader(this.beelineDistanceFiles);
         this.routingWalkReader = new RoutingSimmetricReader(this.routingWalkFiles);
         this.routingBikeReader = new RoutingSimmetricReader(this.routingBikeFiles);
         this.routingCarReader = new RoutingSimmetricReader(this.routingCarFiles);
@@ -173,9 +177,9 @@ public class ConfigModel {
                             routingSimmetricBeliefContext.addWalkDistance(key, this.routingWalkReader.getDistance(key));
                             routingSimmetricBeliefContext.addBikeDistance(key, this.routingBikeReader.getDistance(key));
                             routingSimmetricBeliefContext.addCarDistance(key, this.routingCarReader.getDistance(key));
+                            routingSimmetricBeliefContext.addBeelineDistance(key, this.beelineDistanceReader.getDistance(key));
 
                             // add bus routing data
-
                             routingBusBeliefContext.addBusTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingBusReader.getBusTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
                             routingBusBeliefContext.addBusDistance(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingBusReader.getBusDistance(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
                             routingBusBeliefContext.addWalkTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingBusReader.getWalkTime(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
@@ -194,7 +198,6 @@ public class ConfigModel {
                                 routingTrainBeliefContext.addPostcodeStop(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingTrainReader.getPostcodeStop(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
                                 routingTrainBeliefContext.addFeasibleFlag(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingTrainReader.getFeasibleFlag(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
                             }
-
                         }
 
                         // if it comes back home the tour closes and start a new one

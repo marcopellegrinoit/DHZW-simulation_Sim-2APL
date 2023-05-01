@@ -7,6 +7,8 @@ import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentContextInterface;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Goal;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -25,6 +27,13 @@ public class TripTour extends Goal implements Cloneable {
         this.pid = pid;
         this.day = day;
         this.chain = new ArrayList<Trip>();
+    }
+
+    public void sortTripsByDistance() {
+        // Use a lambda expression to define a custom Comparator that compares Trips based on distance
+        Comparator<Trip> compareByDistance = (Trip t1, Trip t2) -> Double.compare(t2.getBeelineDistance(), t1.getBeelineDistance());
+        // Sort the tripList using the custom Comparator
+        this.chain.sort(compareByDistance);
     }
 
     @Override

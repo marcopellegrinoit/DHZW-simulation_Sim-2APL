@@ -3,6 +3,7 @@ package main.java.nl.uu.iss.ga.simulation;
 import main.java.nl.uu.iss.ga.Simulation;
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
+import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
 import main.java.nl.uu.iss.ga.util.config.ArgParse;
 import main.java.nl.uu.iss.ga.util.tracking.ActivityTypeTracker;
@@ -15,8 +16,11 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -91,8 +95,26 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
                     mode,
                     this.modeOfTransportTracker.getModeTrackerMap().get(mode).get()
             ));
+        }*/
+
+        int totalFrequency = 0;
+        for (AtomicInteger frequency : modeOfTransportTracker.getModeTrackerMap().values()) {
+            totalFrequency += frequency.get();
         }
 
+        Map<TransportMode, Double> proportionMap = new HashMap<>(); // Create a new map to store the proportions
+
+        // Iterate over the map and calculate the proportions
+        for (Map.Entry<TransportMode, AtomicInteger> entry :  modeOfTransportTracker.getModeTrackerMap().entrySet()) {
+            double proportion = entry.getValue().get() / (double)totalFrequency;
+            double roundedProportion = Math.round(proportion * 100.0) / 100.0; // round to 2 decimal places
+            proportionMap.put(entry.getKey(), roundedProportion);
+        }
+
+        // Print the updated map
+        System.out.println(proportionMap);
+
+/*
         for(ActivityType type : this.activityTypeTracker.getActivityTypeTrackerMap().keySet()) {
             LOGGER.log(Level.INFO, String.format(
                     "%s: %d",

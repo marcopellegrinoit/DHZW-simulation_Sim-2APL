@@ -22,7 +22,6 @@ public class MNLModalChoiceModel {
     private static final HashMap<TransportMode, Integer> alphaLeisure = new HashMap<>();
     private static final HashMap<TransportMode, Double> betaTimeLeisure = new HashMap<>();
     private static final HashMap<TransportMode, Double> betaCostLeisure = new HashMap<>();
-
     private static final double betaTimeWalkBus = -0.03;
     private static final double betaTimeWalkTrain = -0.03;
     private static final double betaChangesBus = -0.3;
