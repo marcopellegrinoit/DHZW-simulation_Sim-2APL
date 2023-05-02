@@ -1,6 +1,7 @@
 package main.java.nl.uu.iss.ga.simulation.agent.plan.activity;
 
 import main.java.nl.uu.iss.ga.model.data.*;
+import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 
 import main.java.nl.uu.iss.ga.model.data.dictionary.TwoStringKeys;
@@ -40,6 +41,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
      */
     @Override
     public TripTour executeOnce(PlanToAgentInterface<TripTour> planToAgentInterface) {
+
         BeliefContext beliefContext = planToAgentInterface.getContext(BeliefContext.class);
 
         HashMap<TransportMode, Double> travelTimes = new HashMap<TransportMode, Double>();
@@ -105,7 +107,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                 assert firstMode != null;
                 if (firstMode.equals(TransportMode.CAR_DRIVER)) {
                     trip.setTransportMode(TransportMode.CAR_DRIVER);
-                    beliefContext.getModeOfTransportTracker().notifyTransportModeUsed(TransportMode.CAR_DRIVER);
+                    beliefContext.getModeOfTransportTracker().notifyTransportModeUsed(TransportMode.CAR_DRIVER, beliefContext.getToday(), trip.getArrivalActivity().getActivityType(), person.hasCarLicense(), person.getHousehold().hasCarOwnership());
                 }
             } else {
                 String departurePostcode = trip.getDepartureActivity().getLocation().getPostcode();
@@ -203,7 +205,8 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                 // decide the modal choice
                 TransportMode transportMode = CumulativeDistribution.sampleWithCumulativeDistribution(choiceProbabilities);
                 trip.setTransportMode(transportMode);
-                beliefContext.getModeOfTransportTracker().notifyTransportModeUsed(transportMode);
+
+                beliefContext.getModeOfTransportTracker().notifyTransportModeUsed(transportMode, beliefContext.getToday(), trip.getArrivalActivity().getActivityType(), person.hasCarLicense(), person.getHousehold().hasCarOwnership());
 
                 if (tripTour.getTripChain().indexOf(trip) == 0) {
                     firstMode = transportMode;

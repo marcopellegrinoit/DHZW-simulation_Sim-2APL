@@ -2,6 +2,7 @@ package main.java.nl.uu.iss.ga.simulation;
 
 import main.java.nl.uu.iss.ga.Simulation;
 import main.java.nl.uu.iss.ga.model.data.Activity;
+import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 import main.java.nl.uu.iss.ga.model.data.dictionary.util.CodeTypeInterface;
@@ -12,6 +13,7 @@ import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,6 +27,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class EnvironmentInterface implements TickHookProcessor<Activity> {
+
+    private final boolean printOutput = false;
 
     private static final Logger LOGGER = Logger.getLogger(EnvironmentInterface.class.getName());
     private final Platform platform;
@@ -50,7 +54,7 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
 
         this.startDate = arguments.getStartdate();
 
-        if(this.startDate != null) {
+        if (this.startDate != null) {
             this.today = DayOfWeek.fromDate(this.startDate);
             LOGGER.log(Level.INFO, "Start date set to " + this.startDate.format(DateTimeFormatter.ofPattern("cccc dd MMMM yyyy")));
         }
@@ -58,6 +62,7 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
 
     public void setSimulationStarted() {
         this.simulationStarted = LocalDateTime.now();
+        modeOfTransportTracker.reset();
     }
 
     public long getCurrentTick() {
@@ -79,7 +84,7 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
 
         String date = this.startDate.plusDays(tick).format(DateTimeFormatter.ISO_DATE);
 
-        modeOfTransportTracker.reset();
+        //modeOfTransportTracker.reset();
         activityTypeTracker.reset();
     }
 
@@ -88,47 +93,6 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
         LOGGER.log(Level.FINE, String.format(
                 "Tick %d took %d milliseconds for %d agents (roughly %fms per agent)",
                 tick, lastTickDuration, agentActions.size(), (double) lastTickDuration / agentActions.size()));
-
-/*        for(TransportMode mode : this.modeOfTransportTracker.getModeTrackerMap().keySet()) {
-            LOGGER.log(Level.INFO, String.format(
-                    "%s: %d",
-                    mode,
-                    this.modeOfTransportTracker.getModeTrackerMap().get(mode).get()
-            ));
-        }*/
-
-        int totalFrequency = 0;
-        for (AtomicInteger frequency : modeOfTransportTracker.getModeTrackerMap().values()) {
-            totalFrequency += frequency.get();
-        }
-
-        Map<TransportMode, Double> proportionMap = new HashMap<>(); // Create a new map to store the proportions
-
-        // Iterate over the map and calculate the proportions
-        for (Map.Entry<TransportMode, AtomicInteger> entry :  modeOfTransportTracker.getModeTrackerMap().entrySet()) {
-            double proportion = entry.getValue().get() / (double)totalFrequency;
-            double roundedProportion = Math.round(proportion * 100.0) / 100.0; // round to 2 decimal places
-            proportionMap.put(entry.getKey(), roundedProportion);
-        }
-
-        // Print the updated map
-        System.out.println(proportionMap);
-
-/*
-        for(ActivityType type : this.activityTypeTracker.getActivityTypeTrackerMap().keySet()) {
-            LOGGER.log(Level.INFO, String.format(
-                    "%s: %d",
-                    type,
-                    this.activityTypeTracker.getActivityTypeTrackerMap().get(type).get()
-            ));
-        }*/
-
-        /*
-            TODO:
-                - Write current tracker map to file
-                - Print stats?
-         */
-
     }
 
     @Override
@@ -143,12 +107,64 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
                 l,
                 prettyPrint(combinedDuration))
         );
+
+        if (printOutput) {
+            System.out.println("\nOverall mode choices:");
+            System.out.println(modeOfTransportTracker.getTotalModeMap());
+
+            System.out.println("\nMode x day:");
+            AtomicInteger[][] modeDayMap = modeOfTransportTracker.getModeDayMap();
+            for (DayOfWeek day : DayOfWeek.values()) {
+                System.out.println(day + ":");
+                for (TransportMode mode : TransportMode.values()) {
+                    System.out.println(" " + mode + ": " + modeDayMap[day.ordinal()][mode.ordinal()]);
+                }
+            }
+
+            System.out.println("\nMode x activity:");
+            AtomicInteger[][] modeActivityMap = modeOfTransportTracker.getModeActivityMap();
+            for (ActivityType activity : ActivityType.values()) {
+                System.out.println(activity + ":");
+                for (TransportMode mode : TransportMode.values()) {
+                    System.out.println(" " + mode + ": " + modeActivityMap[activity.ordinal()][mode.ordinal()]);
+                }
+            }
+
+            System.out.println("\nMode x car license:");
+            AtomicInteger[][] modeCarLicenseMap = modeOfTransportTracker.getModeCarLicenseMap();
+            for (boolean b : new boolean[]{true, false}) {
+                System.out.println(b + ":");
+                for (TransportMode mode : TransportMode.values()) {
+                    System.out.println(" " + mode + ": " + modeCarLicenseMap[b ? 1 : 0][mode.ordinal()]);
+                }
+            }
+
+            System.out.println("\nMode x car ownership:");
+            AtomicInteger[][] modeCarOwnership = modeOfTransportTracker.getModeCarOwnershipMap();
+            for (boolean b : new boolean[]{true, false}) {
+                System.out.println(b + ":");
+                for (TransportMode mode : TransportMode.values()) {
+                    System.out.println(" " + mode + ": " + modeCarOwnership[b ? 1 : 0][mode.ordinal()]);
+                }
+            }
+        }
+
+        try {
+            modeOfTransportTracker.saveTotalModeToCsv();
+            modeOfTransportTracker.saveModeDayToCsv();
+            modeOfTransportTracker.saveModeActivityToCsv();
+            modeOfTransportTracker.saveModeCarLicenseToCsv();
+            modeOfTransportTracker.saveModeCarOwnershipToCsv();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * From @url{https://stackoverflow.com/questions/3471397/how-can-i-pretty-print-a-duration-in-java#answer-16323209}
-     * @param duration  Duration object to pretty print
-     * @return          Pretty printed duration
+     *
+     * @param duration Duration object to pretty print
+     * @return Pretty printed duration
      */
     private String prettyPrint(Duration duration) {
         return duration.toString()
