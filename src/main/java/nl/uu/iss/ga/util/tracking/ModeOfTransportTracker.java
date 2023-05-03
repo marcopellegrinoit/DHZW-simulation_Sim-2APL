@@ -6,6 +6,7 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.DayOfWeek;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.AgentID;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
@@ -79,8 +80,8 @@ public class ModeOfTransportTracker {
         return this.modeCarOwnershipMap;
     }
 
-    public void saveTotalModeToCsv() throws IOException {
-        CSVWriter writer = new CSVWriter(new FileWriter("mode_total.csv"));
+    public void saveTotalModeToCsv(File outputDir) throws IOException {
+        CSVWriter writer = new CSVWriter(new FileWriter(new File(outputDir, "mode_total.csv")));
 
         String[] row = new String[2];
         row[0] = "mode_choice";
@@ -95,8 +96,8 @@ public class ModeOfTransportTracker {
         }
         writer.close();
     }
-    public void saveModeDayToCsv() throws IOException {
-        CSVWriter writer = new CSVWriter(new FileWriter("mode-day.csv"));
+    public void saveModeDayToCsv(File outputDir) throws IOException {
+        CSVWriter writer = new CSVWriter(new FileWriter(new File(outputDir, "mode-day.csv")));
 
         String[] row = new String[3];
         row[0] = "day";
@@ -116,8 +117,8 @@ public class ModeOfTransportTracker {
         }
         writer.close();
     }
-    public void saveModeActivityToCsv() throws IOException {
-        CSVWriter writer = new CSVWriter(new FileWriter("mode-activity.csv"));
+    public void saveModeActivityToCsv(File outputDir) throws IOException {
+        CSVWriter writer = new CSVWriter(new FileWriter(new File( outputDir,"mode-activity.csv")));
 
         String[] row = new String[3];
         row[0] = "activity";
@@ -137,8 +138,8 @@ public class ModeOfTransportTracker {
         }
         writer.close();
     }
-    public void saveModeCarLicenseToCsv() throws IOException {
-        CSVWriter writer = new CSVWriter(new FileWriter("mode-car_license.csv"));
+    public void saveModeCarLicenseToCsv(File outputDir) throws IOException {
+        CSVWriter writer = new CSVWriter(new FileWriter(new File( outputDir,"mode-car_license.csv")));
 
         String[] row = new String[3];
         row[0] = "car_license";
@@ -158,8 +159,8 @@ public class ModeOfTransportTracker {
         }
         writer.close();
     }
-    public void saveModeCarOwnershipToCsv() throws IOException {
-        CSVWriter writer = new CSVWriter(new FileWriter("mode-car_ownership.csv"));
+    public void saveModeCarOwnershipToCsv(File outputDir) throws IOException {
+        CSVWriter writer = new CSVWriter(new FileWriter(new File( outputDir,"mode-car_ownership.csv")));
 
         String[] row = new String[3];
         row[0] = "car_license";

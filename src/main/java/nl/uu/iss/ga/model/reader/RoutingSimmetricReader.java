@@ -50,7 +50,7 @@ public class RoutingSimmetricReader {
     }
 
     private void readTravelTimes(File routingFile) {
-        LOGGER.log(Level.INFO, "Reading travel time file " + routingFile.toString());
+        LOGGER.log(Level.INFO, "Reading routing walk, bike, car file " + routingFile.toString());
 
         try {
             CSVReader reader = new CSVReader(new FileReader(routingFile));

@@ -14,6 +14,7 @@ import main.java.nl.uu.iss.ga.simulation.agent.context.RoutingSimmetricBeliefCon
 import main.java.nl.uu.iss.ga.simulation.agent.context.RoutingBusBeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.context.RoutingTrainBeliefContext;
 import main.java.nl.uu.iss.ga.simulation.agent.planscheme.GoalPlanScheme;
+import main.java.nl.uu.iss.ga.util.MNLModalChoiceModel;
 import main.java.nl.uu.iss.ga.util.tracking.ActivityTypeTracker;
 import main.java.nl.uu.iss.ga.util.tracking.ModeOfTransportTracker;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Agent;
@@ -60,6 +61,7 @@ public class ConfigModel {
     private BeelineDistanceReader beelineDistanceReader;
     private RoutingBusReader routingBusReader;
     private RoutingTrainReader routingTrainReader;
+    private MNLparametersReader parametersReader;
     private final ArgParse arguments;
     private final TomlTable table;
     private final String name;
@@ -109,6 +111,8 @@ public class ConfigModel {
 
         this.routingBusReader = new RoutingBusReader(this.routingBusFiles);
         this.routingTrainReader = new RoutingTrainReader(this.routingTrainFiles);
+
+        this.parametersReader = new MNLparametersReader(new File(this.arguments.getOutputDir(), this.arguments.getParameterSetId()));
     }
 
     public void createAgents(Platform platform, EnvironmentInterface environmentInterface, ModeOfTransportTracker modeOfTransportTracker, ActivityTypeTracker activityTypeTracker) {
@@ -117,10 +121,14 @@ public class ConfigModel {
         }
     }
     private void createAgentFromSchedule(Platform platform, EnvironmentInterface environmentInterface, ActivitySchedule schedule, ModeOfTransportTracker modeOfTransportTracker, ActivityTypeTracker activityTypeTracker) {
+
         BeliefContext beliefContext = new BeliefContext(environmentInterface, modeOfTransportTracker, activityTypeTracker);
         RoutingSimmetricBeliefContext routingSimmetricBeliefContext = new RoutingSimmetricBeliefContext(environmentInterface);
         RoutingBusBeliefContext routingBusBeliefContext = new RoutingBusBeliefContext(environmentInterface);
         RoutingTrainBeliefContext routingTrainBeliefContext = new RoutingTrainBeliefContext(environmentInterface);
+
+        MNLModalChoiceModel modalChoiceModel = new MNLModalChoiceModel();
+        modalChoiceModel.setParameters(parametersReader);
 
         AgentArguments<TripTour> arguments = new AgentArguments<TripTour>()
                 .addContext(this.personReader.getPersons().get(schedule.getPid()))
@@ -129,6 +137,7 @@ public class ConfigModel {
                 .addContext(routingSimmetricBeliefContext)
                 .addContext(routingBusBeliefContext)
                 .addContext(routingTrainBeliefContext)
+                .addContext(modalChoiceModel)
                 .addGoalPlanScheme(new GoalPlanScheme());
         try {
             URI uri = new URI(null, String.format("agent-%04d", schedule.getPid()),

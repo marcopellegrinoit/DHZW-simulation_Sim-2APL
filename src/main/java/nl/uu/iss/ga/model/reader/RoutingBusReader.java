@@ -57,7 +57,7 @@ public class RoutingBusReader {
 
 
     private void readTravelTimes(File routingFile) {
-        LOGGER.log(Level.INFO, "Reading travel time file " + routingFile.toString());
+        LOGGER.log(Level.INFO, "Reading routing bus file " + routingFile.toString());
 
         try {
             CSVReader reader = new CSVReader(new FileReader(routingFile));

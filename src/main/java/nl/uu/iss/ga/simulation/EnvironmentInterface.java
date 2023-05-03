@@ -13,6 +13,7 @@ import nl.uu.cs.iss.ga.sim2apl.core.deliberation.DeliberationResult;
 import nl.uu.cs.iss.ga.sim2apl.core.platform.Platform;
 import nl.uu.cs.iss.ga.sim2apl.core.tick.TickHookProcessor;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -150,11 +151,11 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
         }
 
         try {
-            modeOfTransportTracker.saveTotalModeToCsv();
-            modeOfTransportTracker.saveModeDayToCsv();
-            modeOfTransportTracker.saveModeActivityToCsv();
-            modeOfTransportTracker.saveModeCarLicenseToCsv();
-            modeOfTransportTracker.saveModeCarOwnershipToCsv();
+            modeOfTransportTracker.saveTotalModeToCsv(new File(this.arguments.getOutputDir(), this.arguments.getParameterSetId()));
+            modeOfTransportTracker.saveModeDayToCsv(new File(this.arguments.getOutputDir(), this.arguments.getParameterSetId()));
+            modeOfTransportTracker.saveModeActivityToCsv(new File(this.arguments.getOutputDir(), this.arguments.getParameterSetId()));
+            modeOfTransportTracker.saveModeCarLicenseToCsv(new File(this.arguments.getOutputDir(), this.arguments.getParameterSetId()));
+            modeOfTransportTracker.saveModeCarOwnershipToCsv(new File(this.arguments.getOutputDir(), this.arguments.getParameterSetId()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -39,8 +39,7 @@ public class ArgParse {
     private long iterations;
     private LocalDate startdate;
 
-    @Arg(dest = "outputdir")
-    private String outputdir;
+    private String outputDir;
 
     private int node;
 
@@ -57,6 +56,9 @@ public class ArgParse {
 
     @Arg(dest = "logproperties")
     private File logproperties;
+
+    @Arg(dest = "parameterset_id")
+    private String parameterSetId;
 
     private boolean saveStateDataFrames = false;
     private boolean saveVisitsDataFrames = false;
@@ -124,6 +126,8 @@ public class ArgParse {
                 this.descriptor = result.getString("output.descriptor");
                 this.node = (int) result.getLong("output.node", () -> -1);
 
+                this.outputDir = (String) result.getString("config.output_dir");
+
                 TomlTable table = result.getTable("config");
 
                 this.configModel = new ConfigModel(this, "config", table);
@@ -185,6 +189,10 @@ public class ArgParse {
         return threads;
     }
 
+    public String getParameterSetId() {
+        return parameterSetId;
+    }
+
     public long getIterations() {
         return iterations;
     }
@@ -194,7 +202,7 @@ public class ArgParse {
     }
 
     public String getOutputDir() {
-        return outputdir;
+        return outputDir;
     }
 
     public static File findFile(File f) throws FileNotFoundException {
@@ -240,6 +248,12 @@ public class ArgParse {
                 .required(true)
                 .dest("configuration")
                 .help("Specify the TOML configuration file");
+
+        parser.addArgument("--parameterset_id")
+                .type(String.class)
+                .required(true)
+                .dest("parameterset_id")
+                .help("Specify the ID of the parameter set for the MNL model");
 
         ArgumentGroup behaviorCalibration = parser.addArgumentGroup("Behavior Calibration")
                 .description("Arguments used for calibrating the behavior model");

@@ -38,7 +38,7 @@ public class BeelineDistanceReader {
     }
 
     private void readBeelineDistances(File routingFile) {
-        LOGGER.log(Level.INFO, "Reading travel time file " + routingFile.toString());
+        LOGGER.log(Level.INFO, "Reading beeline distance file " + routingFile.toString());
 
         try {
             CSVReader reader = new CSVReader(new FileReader(routingFile));

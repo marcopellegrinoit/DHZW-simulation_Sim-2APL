@@ -43,6 +43,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
     public TripTour executeOnce(PlanToAgentInterface<TripTour> planToAgentInterface) {
 
         BeliefContext beliefContext = planToAgentInterface.getContext(BeliefContext.class);
+        MNLModalChoiceModel modalChoiceModel = planToAgentInterface.getContext(MNLModalChoiceModel.class);
 
         HashMap<TransportMode, Double> travelTimes = new HashMap<TransportMode, Double>();
         HashMap<TransportMode, Double> travelDistances = new HashMap<TransportMode, Double>();
@@ -184,7 +185,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                 }
 
                 // compute choice probabilities
-                HashMap<TransportMode, Double> choiceProbabilities = MNLModalChoiceModel.getChoiceProbabilities(
+                HashMap<TransportMode, Double> choiceProbabilities = modalChoiceModel.getChoiceProbabilities(
                         walkPossible,
                         bikePossible,
                         carDriverPossible,
