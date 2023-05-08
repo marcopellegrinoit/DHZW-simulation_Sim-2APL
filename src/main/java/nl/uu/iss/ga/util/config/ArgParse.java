@@ -57,8 +57,8 @@ public class ArgParse {
     @Arg(dest = "logproperties")
     private File logproperties;
 
-    @Arg(dest = "parameterset_id")
-    private String parameterSetId;
+    @Arg(dest = "parametersetindex")
+    private int parameterSetIndex;
 
     private boolean saveStateDataFrames = false;
     private boolean saveVisitsDataFrames = false;
@@ -189,8 +189,8 @@ public class ArgParse {
         return threads;
     }
 
-    public String getParameterSetId() {
-        return parameterSetId;
+    public int getParameterSetIndex() {
+        return parameterSetIndex;
     }
 
     public long getIterations() {
@@ -249,11 +249,11 @@ public class ArgParse {
                 .dest("configuration")
                 .help("Specify the TOML configuration file");
 
-        parser.addArgument("--parameterset_id")
-                .type(String.class)
+        parser.addArgument("--parameterset_index")
+                .type(Integer.class)
                 .required(true)
-                .dest("parameterset_id")
-                .help("Specify the ID of the parameter set for the MNL model");
+                .dest("parametersetindex")
+                .help("Specify the index of the parameter set for the MNL model");
 
         ArgumentGroup behaviorCalibration = parser.addArgumentGroup("Behavior Calibration")
                 .description("Arguments used for calibrating the behavior model");

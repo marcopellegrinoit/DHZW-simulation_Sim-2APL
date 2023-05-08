@@ -1,5 +1,6 @@
 package main.java.nl.uu.iss.ga.simulation;
 
+import com.opencsv.exceptions.CsvValidationException;
 import main.java.nl.uu.iss.ga.Simulation;
 import main.java.nl.uu.iss.ga.model.data.Activity;
 import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
@@ -151,12 +152,15 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
         }
 
         try {
-            modeOfTransportTracker.saveTotalModeToCsv(new File(this.arguments.getOutputDir(), this.arguments.getParameterSetId()));
-            modeOfTransportTracker.saveModeDayToCsv(new File(this.arguments.getOutputDir(), this.arguments.getParameterSetId()));
-            modeOfTransportTracker.saveModeActivityToCsv(new File(this.arguments.getOutputDir(), this.arguments.getParameterSetId()));
-            modeOfTransportTracker.saveModeCarLicenseToCsv(new File(this.arguments.getOutputDir(), this.arguments.getParameterSetId()));
-            modeOfTransportTracker.saveModeCarOwnershipToCsv(new File(this.arguments.getOutputDir(), this.arguments.getParameterSetId()));
+            modeOfTransportTracker.appendOutput(new File(this.arguments.getOutputDir()));
+/*          modeOfTransportTracker.saveTotalModeToCsv(new File(this.arguments.getOutputDir()));
+            modeOfTransportTracker.saveModeDayToCsv(new File(this.arguments.getOutputDir()));
+            modeOfTransportTracker.saveModeActivityToCsv(new File(this.arguments.getOutputDir()));
+            modeOfTransportTracker.saveModeCarLicenseToCsv(new File(this.arguments.getOutputDir()));
+            modeOfTransportTracker.saveModeCarOwnershipToCsv(new File(this.arguments.getOutputDir()));*/
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (CsvValidationException e) {
             throw new RuntimeException(e);
         }
     }

@@ -31,7 +31,7 @@ public class MNLparametersReader {
     private double betaChangesBus;
     private double betaChangesTrain;
 
-    public MNLparametersReader(File parameterDir) {
+    public MNLparametersReader(File parameterDir, int parameterSetIndex) {
         this.alphaWork = new HashMap<>();
         this.betaTimeWork = new HashMap<>();
         this.betaCostWork = new HashMap<>();
@@ -42,87 +42,84 @@ public class MNLparametersReader {
         this.betaTimeLeisure = new HashMap<>();
         this.betaCostLeisure = new HashMap<>();
 
-        readParameters(new File(parameterDir, "parameterset.csv"));
+        readParameters(new File(parameterDir, "parametersets.csv"), parameterSetIndex);
     }
 
-    private double getNext() throws CsvValidationException, IOException {
-        String [] line = reader.readNext();
-        return Double.parseDouble(line[1].trim());
-    }
-
-    private void readParameters(File routingFile) {
+    private void readParameters(File routingFile, int parameterSetIndex) {
         LOGGER.log(Level.INFO, "Reading parameters MNL file " + routingFile.toString());
 
         try {
             this.reader = new CSVReader(new FileReader(routingFile));
 
             // Skip the first line of the CSV file (the header)
-            reader.skip(1);
+            reader.skip(parameterSetIndex);
+
+            String [] line = reader.readNext();
 
             // work
-            alphaWork.put(TransportMode.WALK, this.getNext());
-            alphaWork.put(TransportMode.BIKE, this.getNext());
-            alphaWork.put(TransportMode.CAR_DRIVER, this.getNext());
-            alphaWork.put(TransportMode.CAR_PASSENGER, this.getNext());
-            alphaWork.put(TransportMode.BUS_TRAM, this.getNext());
-            alphaWork.put(TransportMode.TRAIN, this.getNext());
+            alphaWork.put(TransportMode.WALK, Double.parseDouble(line[0]));
+            alphaWork.put(TransportMode.BIKE, Double.parseDouble(line[1]));
+            alphaWork.put(TransportMode.CAR_DRIVER, Double.parseDouble(line[2]));
+            alphaWork.put(TransportMode.CAR_PASSENGER, Double.parseDouble(line[3]));
+            alphaWork.put(TransportMode.BUS_TRAM, Double.parseDouble(line[4]));
+            alphaWork.put(TransportMode.TRAIN, Double.parseDouble(line[5]));
 
-            betaTimeWork.put(TransportMode.WALK, this.getNext());
-            betaTimeWork.put(TransportMode.BIKE, this.getNext());
-            betaTimeWork.put(TransportMode.CAR_DRIVER, this.getNext());
-            betaTimeWork.put(TransportMode.CAR_PASSENGER, this.getNext());
-            betaTimeWork.put(TransportMode.BUS_TRAM, this.getNext());
-            betaTimeWork.put(TransportMode.TRAIN, this.getNext());
+            betaTimeWork.put(TransportMode.WALK, Double.parseDouble(line[6]));
+            betaTimeWork.put(TransportMode.BIKE, Double.parseDouble(line[7]));
+            betaTimeWork.put(TransportMode.CAR_DRIVER, Double.parseDouble(line[8]));
+            betaTimeWork.put(TransportMode.CAR_PASSENGER, Double.parseDouble(line[9]));
+            betaTimeWork.put(TransportMode.BUS_TRAM, Double.parseDouble(line[10]));
+            betaTimeWork.put(TransportMode.TRAIN, Double.parseDouble(line[11]));
 
-            betaCostWork.put(TransportMode.CAR_DRIVER, this.getNext());
-            betaCostWork.put(TransportMode.CAR_PASSENGER, this.getNext());
-            betaCostWork.put(TransportMode.BUS_TRAM, this.getNext());
-            betaCostWork.put(TransportMode.TRAIN, this.getNext());
+            betaCostWork.put(TransportMode.CAR_DRIVER, Double.parseDouble(line[12]));
+            betaCostWork.put(TransportMode.CAR_PASSENGER, Double.parseDouble(line[13]));
+            betaCostWork.put(TransportMode.BUS_TRAM, Double.parseDouble(line[14]));
+            betaCostWork.put(TransportMode.TRAIN, Double.parseDouble(line[15]));
 
             // school
-            alphaSchool.put(TransportMode.WALK, this.getNext());
-            alphaSchool.put(TransportMode.BIKE, this.getNext());
-            alphaSchool.put(TransportMode.CAR_DRIVER, this.getNext());
-            alphaSchool.put(TransportMode.CAR_PASSENGER, this.getNext());
-            alphaSchool.put(TransportMode.BUS_TRAM, this.getNext());
-            alphaSchool.put(TransportMode.TRAIN, this.getNext());
+            alphaSchool.put(TransportMode.WALK, Double.parseDouble(line[16]));
+            alphaSchool.put(TransportMode.BIKE, Double.parseDouble(line[17]));
+            alphaSchool.put(TransportMode.CAR_DRIVER, Double.parseDouble(line[18]));
+            alphaSchool.put(TransportMode.CAR_PASSENGER, Double.parseDouble(line[19]));
+            alphaSchool.put(TransportMode.BUS_TRAM, Double.parseDouble(line[20]));
+            alphaSchool.put(TransportMode.TRAIN, Double.parseDouble(line[21]));
 
-            betaTimeSchool.put(TransportMode.WALK, this.getNext());
-            betaTimeSchool.put(TransportMode.BIKE, this.getNext());
-            betaTimeSchool.put(TransportMode.CAR_DRIVER, this.getNext());
-            betaTimeSchool.put(TransportMode.CAR_PASSENGER, this.getNext());
-            betaTimeSchool.put(TransportMode.BUS_TRAM, this.getNext());
-            betaTimeSchool.put(TransportMode.TRAIN, this.getNext());
+            betaTimeSchool.put(TransportMode.WALK, Double.parseDouble(line[22]));
+            betaTimeSchool.put(TransportMode.BIKE, Double.parseDouble(line[23]));
+            betaTimeSchool.put(TransportMode.CAR_DRIVER, Double.parseDouble(line[24]));
+            betaTimeSchool.put(TransportMode.CAR_PASSENGER, Double.parseDouble(line[25]));
+            betaTimeSchool.put(TransportMode.BUS_TRAM, Double.parseDouble(line[26]));
+            betaTimeSchool.put(TransportMode.TRAIN, Double.parseDouble(line[27]));
 
-            betaCostSchool.put(TransportMode.CAR_DRIVER, this.getNext());
-            betaCostSchool.put(TransportMode.CAR_PASSENGER, this.getNext());
-            betaCostSchool.put(TransportMode.BUS_TRAM, this.getNext());
-            betaCostSchool.put(TransportMode.TRAIN, this.getNext());
+            betaCostSchool.put(TransportMode.CAR_DRIVER, Double.parseDouble(line[28]));
+            betaCostSchool.put(TransportMode.CAR_PASSENGER, Double.parseDouble(line[29]));
+            betaCostSchool.put(TransportMode.BUS_TRAM, Double.parseDouble(line[30]));
+            betaCostSchool.put(TransportMode.TRAIN, Double.parseDouble(line[31]));
 
             // other: leisure
-            alphaLeisure.put(TransportMode.WALK, this.getNext());
-            alphaLeisure.put(TransportMode.BIKE, this.getNext());
-            alphaLeisure.put(TransportMode.CAR_DRIVER, this.getNext());
-            alphaLeisure.put(TransportMode.CAR_PASSENGER, this.getNext());
-            alphaLeisure.put(TransportMode.BUS_TRAM, this.getNext());
-            alphaLeisure.put(TransportMode.TRAIN, this.getNext());
+            alphaLeisure.put(TransportMode.WALK, Double.parseDouble(line[32]));
+            alphaLeisure.put(TransportMode.BIKE, Double.parseDouble(line[33]));
+            alphaLeisure.put(TransportMode.CAR_DRIVER, Double.parseDouble(line[34]));
+            alphaLeisure.put(TransportMode.CAR_PASSENGER, Double.parseDouble(line[35]));
+            alphaLeisure.put(TransportMode.BUS_TRAM, Double.parseDouble(line[36]));
+            alphaLeisure.put(TransportMode.TRAIN, Double.parseDouble(line[37]));
 
-            betaTimeLeisure.put(TransportMode.WALK, this.getNext());
-            betaTimeLeisure.put(TransportMode.BIKE, this.getNext());
-            betaTimeLeisure.put(TransportMode.CAR_DRIVER, this.getNext());
-            betaTimeLeisure.put(TransportMode.CAR_PASSENGER, this.getNext());
-            betaTimeLeisure.put(TransportMode.BUS_TRAM, this.getNext());
-            betaTimeLeisure.put(TransportMode.TRAIN, -this.getNext());
+            betaTimeLeisure.put(TransportMode.WALK, Double.parseDouble(line[38]));
+            betaTimeLeisure.put(TransportMode.BIKE, Double.parseDouble(line[39]));
+            betaTimeLeisure.put(TransportMode.CAR_DRIVER, Double.parseDouble(line[40]));
+            betaTimeLeisure.put(TransportMode.CAR_PASSENGER, Double.parseDouble(line[41]));
+            betaTimeLeisure.put(TransportMode.BUS_TRAM, Double.parseDouble(line[42]));
+            betaTimeLeisure.put(TransportMode.TRAIN, Double.parseDouble(line[43]));
 
-            betaCostLeisure.put(TransportMode.CAR_DRIVER, this.getNext());
-            betaCostLeisure.put(TransportMode.CAR_PASSENGER, this.getNext());
-            betaCostLeisure.put(TransportMode.BUS_TRAM, this.getNext());
-            betaCostLeisure.put(TransportMode.TRAIN, this.getNext());
+            betaCostLeisure.put(TransportMode.CAR_DRIVER, Double.parseDouble(line[44]));
+            betaCostLeisure.put(TransportMode.CAR_PASSENGER, Double.parseDouble(line[45]));
+            betaCostLeisure.put(TransportMode.BUS_TRAM, Double.parseDouble(line[46]));
+            betaCostLeisure.put(TransportMode.TRAIN, Double.parseDouble(line[47]));
 
-            betaTimeWalkBus = this.getNext();
-            betaTimeWalkTrain = this.getNext();
-            betaChangesBus = this.getNext();
-            betaChangesTrain = this.getNext();
+            betaTimeWalkBus = Double.parseDouble(line[48]);
+            betaTimeWalkTrain = Double.parseDouble(line[49]);
+            betaChangesBus = Double.parseDouble(line[50]);
+            betaChangesTrain = Double.parseDouble(line[51]);
         } catch (IOException | CsvValidationException e) {
             throw new RuntimeException(e);
         }
