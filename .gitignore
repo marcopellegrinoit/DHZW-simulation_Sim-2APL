@@ -16,7 +16,7 @@ buildNumber.properties
 src/main/resources/DHZW_full
 src/main/resources/DHZW_sample
 src/main/resources/DHZW_sample_1
-src/main/resources/.ipynb_checkpoints/*
+.ipynb_checkpoints
 output*
 
 
