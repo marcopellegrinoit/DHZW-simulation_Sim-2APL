@@ -76,4 +76,4 @@ An example of a configuration file (using the [TOML](https://github.com/toml-lan
 ## License
 
 This library contains free software; The code can be freely used under the Mozilla Public License 2.0. See the [license](LICENSE) file for details.  
-This code comes with ABSOLUTELY NO WARRANTY, to the extent permitted by applicable law.\`
+This code comes with ABSOLUTELY NO WARRANTY, to the extent permitted by applicable law.
