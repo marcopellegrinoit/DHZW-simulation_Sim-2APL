@@ -14,8 +14,9 @@ buildNumber.properties
 .idea
 
 src/main/resources/*
-!src/main/resources/*.ipynb
 !src/main/resources/sensitivity_analysis/*
+!src/main/resources/sensitivity_analysis/data/*
+!src/main/resources/sensitivity_analysis/output/*
 output*
 
 log/*.log
