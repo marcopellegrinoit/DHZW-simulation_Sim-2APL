@@ -15,10 +15,7 @@ The model is firstly calibrated with observed aggregated data from the ODIN data
 
 ## Invoking program
 
-See manual.txt for command line arguments, or call --help when running the application  
-Note the flag `-c` (or `--connect-pansim`) should be used to share data with the  
-[PanSim](https://github.com/parantapa/pansim) simulation environment, which is the required configuration  
-when modeling disease progression, and also allows distributing the simulation across multiple compute nodes.
+Call --help when running the application for command line arguments.
 
 The JAR file is automatically generated and placed in the `target` directory.  
 In order to use the JAR file, make sure to use the Java version also used by Maven, and call
@@ -71,10 +68,10 @@ $ mvn -U clean install
 ```
 
 The application requires various arguments, either when invoked from the command line or when used in an IDE.  
-See [manual.txt](manual.txt) for more information, or invoke the program with the argument `--help`
+Invoke the program with the argument `--help`
 
 An example of a configuration file (using the [TOML](https://github.com/toml-lang/toml) language) is given in  
-[src/main/resources/config\_full.toml](src/main/resources/config_full.toml)
+[src/main/resources/config\_full.toml](src/main/resources/config_DHZW_full.toml)
 
 ## License
 
