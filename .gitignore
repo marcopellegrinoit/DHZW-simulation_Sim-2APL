@@ -17,7 +17,5 @@ src/main/resources/DHZW_full
 src/main/resources/DHZW_sample
 src/main/resources/DHZW_sample_1
 .ipynb_checkpoints
-output*
-
 
 log/*.log
