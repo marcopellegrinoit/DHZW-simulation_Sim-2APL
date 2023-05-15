@@ -13,4 +13,3 @@ iterations = 1 # Number of days, or end date
 	routing_bus_tram = ["C:/Users/6997619/Documents/GitHub projects/DHZW_routing/output/routing_bus.csv"]
 	routing_train = ["C:/Users/6997619/Documents/GitHub projects/DHZW_routing/output/routing_train.csv"]
 	beeline_distance = ["C:/Users/6997619/Documents/GitHub projects/DHZW_routing/output/beeline_distance.csv"]
-	output_dir = "C:/Users/6997619/Documents/GitHub projects/DHZW-simulation_Sim-2APL/src/main/resources/sensitivity_analysis/output"

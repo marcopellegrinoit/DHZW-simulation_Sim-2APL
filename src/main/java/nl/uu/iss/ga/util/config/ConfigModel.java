@@ -112,7 +112,7 @@ public class ConfigModel {
         this.routingBusReader = new RoutingBusReader(this.routingBusFiles);
         this.routingTrainReader = new RoutingTrainReader(this.routingTrainFiles);
 
-        this.parametersReader = new MNLparametersReader(new File(this.arguments.getOutputDir()), this.arguments.getParameterSetIndex());
+        this.parametersReader = new MNLparametersReader(this.arguments.getParameterSetFile(), this.arguments.getParameterSetIndex());
     }
 
     public void createAgents(Platform platform, EnvironmentInterface environmentInterface, ModeOfTransportTracker modeOfTransportTracker, ActivityTypeTracker activityTypeTracker) {

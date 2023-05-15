@@ -60,6 +60,12 @@ public class ArgParse {
     @Arg(dest = "parametersetindex")
     private int parameterSetIndex;
 
+    @Arg(dest = "outputPath")
+    private String outputPath;
+
+    @Arg(dest = "parametersPath")
+    private String parametersPath;
+
     private boolean saveStateDataFrames = false;
     private boolean saveVisitsDataFrames = false;
 
@@ -126,8 +132,6 @@ public class ArgParse {
                 this.descriptor = result.getString("output.descriptor");
                 this.node = (int) result.getLong("output.node", () -> -1);
 
-                this.outputDir = (String) result.getString("config.output_dir");
-
                 TomlTable table = result.getTable("config");
 
                 this.configModel = new ConfigModel(this, "config", table);
@@ -193,16 +197,20 @@ public class ArgParse {
         return parameterSetIndex;
     }
 
+    public File getParameterSetFile() {
+        return new File(this.parametersPath);
+    }
+
+    public File getOutputFile() {
+        return new File(this.outputPath);
+    }
+
     public long getIterations() {
         return iterations;
     }
 
     public LocalDate getStartdate() {
         return startdate;
-    }
-
-    public String getOutputDir() {
-        return outputDir;
     }
 
     public static File findFile(File f) throws FileNotFoundException {
@@ -254,6 +262,18 @@ public class ArgParse {
                 .required(true)
                 .dest("parametersetindex")
                 .help("Specify the index of the parameter set for the MNL model");
+
+        parser.addArgument("--output_file")
+                .type(String.class)
+                .required(true)
+                .dest("outputPath")
+                .help("specifity the relative output file path from the resources directory");
+
+        parser.addArgument("--parameter_file")
+                .type(String.class)
+                .required(true)
+                .dest("parametersPath")
+                .help("specifity the relative file path of the parmeter sets from the resources directory");
 
         ArgumentGroup behaviorCalibration = parser.addArgumentGroup("Behavior Calibration")
                 .description("Arguments used for calibrating the behavior model");

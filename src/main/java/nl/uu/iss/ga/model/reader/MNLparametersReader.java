@@ -33,7 +33,7 @@ public class MNLparametersReader {
     private double betaChangesTransportSchool;
     private double betaChangesTransportLeisure;
 
-    public MNLparametersReader(File parameterDir, int parameterSetIndex) {
+    public MNLparametersReader(File parameterFile, int parameterSetIndex) {
         this.alphaWork = new HashMap<>();
         this.betaTimeWork = new HashMap<>();
         this.betaCostWork = new HashMap<>();
@@ -44,7 +44,7 @@ public class MNLparametersReader {
         this.betaTimeLeisure = new HashMap<>();
         this.betaCostLeisure = new HashMap<>();
 
-        readParameters(new File(parameterDir, "parametersets.csv"), parameterSetIndex);
+        readParameters(parameterFile, parameterSetIndex);
     }
 
     private void readParameters(File routingFile, int parameterSetIndex) {

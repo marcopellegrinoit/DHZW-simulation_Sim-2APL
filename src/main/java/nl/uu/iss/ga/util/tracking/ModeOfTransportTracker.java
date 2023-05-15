@@ -185,7 +185,7 @@ public class ModeOfTransportTracker {
         writer.close();
     }
 
-    public void appendOutput(File outputDir) throws IOException, CsvValidationException {
+    public void appendOutput(File outputFile) throws IOException, CsvValidationException {
         // Calculate the sum of all frequencies
         int totalFrequency = 0;
         for (AtomicInteger frequency : this.totalModeMap.values()) {
@@ -202,13 +202,13 @@ public class ModeOfTransportTracker {
         }
 
         // Create a new CSV reader
-        CSVReader reader = new CSVReader(new FileReader(new File(outputDir, "output_proportions.csv")));
+        CSVReader reader = new CSVReader(new FileReader(outputFile));
 
         // Read the header row of the CSV file
         String[] headerRow = reader.readNext();
 
         // Create a new CSV writer
-        CSVWriter writer = new CSVWriter(new FileWriter(new File(outputDir, "output_proportions.csv"), true));
+        CSVWriter writer = new CSVWriter(new FileWriter(outputFile, true));
 
         // Create an array to hold the row data
         String[] rowData = new String[headerRow.length];

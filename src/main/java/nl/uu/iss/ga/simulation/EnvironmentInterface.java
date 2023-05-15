@@ -152,7 +152,7 @@ public class EnvironmentInterface implements TickHookProcessor<Activity> {
         }
 
         try {
-            modeOfTransportTracker.appendOutput(new File(this.arguments.getOutputDir()));
+            modeOfTransportTracker.appendOutput(this.arguments.getOutputFile());
 /*          modeOfTransportTracker.saveTotalModeToCsv(new File(this.arguments.getOutputDir()));
             modeOfTransportTracker.saveModeDayToCsv(new File(this.arguments.getOutputDir()));
             modeOfTransportTracker.saveModeActivityToCsv(new File(this.arguments.getOutputDir()));
