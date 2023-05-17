@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ModeOfTransportTracker {
 
     private Map<TransportMode, AtomicInteger> totalModeMap;
+    private Map<TransportMode, AtomicInteger> beelineMap;
     private AtomicInteger[][] modeDayMap = new AtomicInteger[DayOfWeek.values().length][TransportMode.values().length];
     private AtomicInteger[][] modeActivityMap = new AtomicInteger[ActivityType.values().length][TransportMode.values().length];
     private AtomicInteger[][] modeCarLicenseMap = new AtomicInteger[2][TransportMode.values().length];
@@ -27,6 +28,11 @@ public class ModeOfTransportTracker {
 
     public void reset() {
         // Initialise map for overall mode frequencies
+        beelineMap = new ConcurrentHashMap<>();
+        for(TransportMode mode : TransportMode.values()) {
+            beelineMap.put(mode, new AtomicInteger(0));
+        }
+
         totalModeMap = new ConcurrentHashMap<>();
         for(TransportMode mode : TransportMode.values()) {
             totalModeMap.put(mode, new AtomicInteger(0));
@@ -59,13 +65,14 @@ public class ModeOfTransportTracker {
         }
     }
 
-    public void notifyTransportModeUsed(TransportMode mode, DayOfWeek day, ActivityType activityType, boolean hasCarLicense, boolean hasCar) {
+    public void notifyTransportModeUsed(TransportMode mode, DayOfWeek day, ActivityType activityType, boolean hasCarLicense, boolean hasCar, double distance) {
         this.totalModeMap.get(mode).getAndIncrement();
         this.modeDayMap[day.ordinal()][mode.ordinal()].getAndIncrement();
         this.modeActivityMap[activityType.ordinal()][mode.ordinal()].getAndIncrement();
         this.modeActivityMap[activityType.ordinal()][mode.ordinal()].getAndIncrement();
         this.modeCarLicenseMap[hasCarLicense ? 1 : 0][mode.ordinal()].getAndIncrement();
         this.modeCarOwnershipMap[hasCar ? 1 : 0][mode.ordinal()].getAndIncrement();
+        this.beelineMap.get(mode).addAndGet((int) distance);
     }
 
     public Map<TransportMode, AtomicInteger> getTotalModeMap() {
@@ -82,6 +89,9 @@ public class ModeOfTransportTracker {
     }
     public AtomicInteger[][] getModeCarOwnershipMap() {
         return this.modeCarOwnershipMap;
+    }
+    public Map<TransportMode, AtomicInteger> getDistanceMap() {
+        return this.beelineMap;
     }
 
     public void saveTotalModeToCsv(File outputDir) throws IOException {
@@ -100,6 +110,24 @@ public class ModeOfTransportTracker {
         }
         writer.close();
     }
+
+    public void saveTotalDistanceToCsv(File outputDir) throws IOException {
+        CSVWriter writer = new CSVWriter(new FileWriter(new File(outputDir, "beeline.csv")));
+
+        String[] row = new String[2];
+        row[0] = "mode_choice";
+        row[1] = "total_distance";
+
+        writer.writeNext(row);
+        for (TransportMode mode : TransportMode.values()) {
+            row = new String[2];
+            row[0] = String.valueOf(mode);
+            row[1] = String.valueOf(this.beelineMap.get(mode));
+            writer.writeNext(row);
+        }
+        writer.close();
+    }
+
     public void saveModeDayToCsv(File outputDir) throws IOException {
         CSVWriter writer = new CSVWriter(new FileWriter(new File(outputDir, "mode-day.csv")));
 

@@ -42,71 +42,13 @@ public class MNLModalChoiceModel implements Context {
         this.betaTimeLeisure = parametersReader.getBetaTimeLeisure();
         this.betaCostLeisure = parametersReader.getBetaCostLeisure();
 
-        // work
-        alphaWork.put(TransportMode.CAR_DRIVER, 1.0 * alphaWork.get(TransportMode.CAR_DRIVER));
-        alphaWork.put(TransportMode.CAR_PASSENGER, -3.0 * alphaWork.get(TransportMode.CAR_PASSENGER));
-        alphaWork.put(TransportMode.BUS_TRAM, -1.0 * alphaWork.get(TransportMode.BUS_TRAM));
-        alphaWork.put(TransportMode.TRAIN, -1.0 * alphaWork.get(TransportMode.TRAIN));
+        this.betaTimeWalkTransportWork = parametersReader.getBetaTimeWalkTransportWork();
+        this.betaTimeWalkTransportSchool = parametersReader.getBetaTimeWalkTransportSchool();
+        this.betaTimeWalkTransportLeisure = parametersReader.getBetaTimeWalkTransportLeisure();
 
-        betaTimeWork.put(TransportMode.WALK, -0.04 * betaTimeWork.get(TransportMode.WALK));
-        betaTimeWork.put(TransportMode.BIKE, -0.03 * betaTimeWork.get(TransportMode.BIKE));
-        betaTimeWork.put(TransportMode.CAR_DRIVER, -0.02 * betaTimeWork.get(TransportMode.CAR_DRIVER));
-        betaTimeWork.put(TransportMode.CAR_PASSENGER, -0.02 * betaTimeWork.get(TransportMode.CAR_PASSENGER));
-        betaTimeWork.put(TransportMode.BUS_TRAM, -0.02 * betaTimeWork.get(TransportMode.BUS_TRAM));
-        betaTimeWork.put(TransportMode.TRAIN, -0.02 * betaTimeWork.get(TransportMode.TRAIN));
-
-        betaCostWork.put(TransportMode.CAR_DRIVER, 3 * betaCostWork.get(TransportMode.CAR_DRIVER));
-        betaCostWork.put(TransportMode.CAR_PASSENGER, 2 * betaCostWork.get(TransportMode.CAR_PASSENGER));
-        betaCostWork.put(TransportMode.BUS_TRAM, 2 * betaCostWork.get(TransportMode.BUS_TRAM));
-        betaCostWork.put(TransportMode.TRAIN, 2 * betaCostWork.get(TransportMode.TRAIN));
-
-        // school
-        alphaSchool.put(TransportMode.CAR_DRIVER, 1.0 * alphaSchool.get(TransportMode.CAR_DRIVER));
-        alphaSchool.put(TransportMode.CAR_PASSENGER, -3.0 * alphaSchool.get(TransportMode.CAR_PASSENGER));
-        alphaSchool.put(TransportMode.BUS_TRAM, -1.0 * alphaSchool.get(TransportMode.BUS_TRAM));
-        alphaSchool.put(TransportMode.TRAIN, -1.0 * alphaSchool.get(TransportMode.TRAIN));
-
-        betaTimeSchool.put(TransportMode.WALK, -0.04 * betaTimeSchool.get(TransportMode.WALK));
-        betaTimeSchool.put(TransportMode.BIKE, -0.03 * betaTimeSchool.get(TransportMode.BIKE));
-        betaTimeSchool.put(TransportMode.CAR_DRIVER, -0.02 * betaTimeSchool.get(TransportMode.CAR_DRIVER));
-        betaTimeSchool.put(TransportMode.CAR_PASSENGER, -0.02 * betaTimeSchool.get(TransportMode.CAR_PASSENGER));
-        betaTimeSchool.put(TransportMode.BUS_TRAM, -0.02 * betaTimeSchool.get(TransportMode.BUS_TRAM));
-        betaTimeSchool.put(TransportMode.TRAIN, -0.02 * betaTimeSchool.get(TransportMode.TRAIN));
-
-        betaCostSchool.put(TransportMode.CAR_DRIVER, 3 * betaCostSchool.get(TransportMode.CAR_DRIVER));
-        betaCostSchool.put(TransportMode.CAR_PASSENGER, 2 * betaCostSchool.get(TransportMode.CAR_PASSENGER));
-        betaCostSchool.put(TransportMode.BUS_TRAM, 2 * betaCostSchool.get(TransportMode.BUS_TRAM));
-        betaCostSchool.put(TransportMode.TRAIN, 2 * betaCostSchool.get(TransportMode.TRAIN));
-
-        // leisure
-        alphaLeisure.put(TransportMode.CAR_DRIVER, 1.0 * alphaLeisure.get(TransportMode.CAR_DRIVER));
-        alphaLeisure.put(TransportMode.CAR_PASSENGER, -1.0 * alphaLeisure.get(TransportMode.CAR_PASSENGER));
-        alphaLeisure.put(TransportMode.BUS_TRAM, -1.0 * alphaLeisure.get(TransportMode.BUS_TRAM));
-        alphaLeisure.put(TransportMode.TRAIN, -1.0 * alphaLeisure.get(TransportMode.TRAIN));
-
-        betaTimeLeisure.put(TransportMode.WALK, -0.03 * betaTimeLeisure.get(TransportMode.WALK));
-        betaTimeLeisure.put(TransportMode.BIKE, -0.02 * betaTimeLeisure.get(TransportMode.BIKE));
-        betaTimeLeisure.put(TransportMode.CAR_DRIVER, -0.018 * betaTimeLeisure.get(TransportMode.CAR_DRIVER));
-        betaTimeLeisure.put(TransportMode.CAR_PASSENGER, -0.018 * betaTimeLeisure.get(TransportMode.CAR_PASSENGER));
-        betaTimeLeisure.put(TransportMode.BUS_TRAM, -0.018 * betaTimeLeisure.get(TransportMode.BUS_TRAM));
-        betaTimeLeisure.put(TransportMode.TRAIN, -0.018 * betaTimeLeisure.get(TransportMode.TRAIN));
-
-        betaCostLeisure.put(TransportMode.CAR_DRIVER, -0.18 * betaCostLeisure.get(TransportMode.CAR_DRIVER));
-        betaCostLeisure.put(TransportMode.CAR_PASSENGER, -0.18 * betaCostLeisure.get(TransportMode.CAR_PASSENGER));
-        betaCostLeisure.put(TransportMode.BUS_TRAM, -0.12 * betaCostLeisure.get(TransportMode.BUS_TRAM));
-        betaCostLeisure.put(TransportMode.TRAIN, -0.12 * betaCostLeisure.get(TransportMode.TRAIN));
-
-        // non-map values
-        double BETA_WALKTIME_TRANSPORT = -0.03;
-        this.betaTimeWalkTransportWork = BETA_WALKTIME_TRANSPORT * parametersReader.getBetaTimeWalkTransportWork();
-        this.betaTimeWalkTransportSchool = BETA_WALKTIME_TRANSPORT * parametersReader.getBetaTimeWalkTransportSchool();
-        this.betaTimeWalkTransportLeisure = BETA_WALKTIME_TRANSPORT * parametersReader.getBetaTimeWalkTransportLeisure();
-
-        double BETA_CHANGES_TRANSPORT = -0.3;
-        this.betaChangesTransportWork = BETA_CHANGES_TRANSPORT * parametersReader.getBetaChangesTransportWork();
-        this.betaChangesTransportSchool = BETA_CHANGES_TRANSPORT * parametersReader.getBetaChangesTransportSchool();
-        this.betaChangesTransportLeisure = BETA_CHANGES_TRANSPORT * parametersReader.getBetaChangesTransportLeisure();
-
+        this.betaChangesTransportWork = parametersReader.getBetaChangesTransportWork();
+        this.betaChangesTransportSchool = parametersReader.getBetaChangesTransportSchool();
+        this.betaChangesTransportLeisure = parametersReader.getBetaChangesTransportLeisure();
     }
 
     public HashMap<TransportMode, Double> getChoiceProbabilities (
@@ -128,9 +70,9 @@ public class MNLModalChoiceModel implements Context {
             ActivityType arrivalType) {
 
         // select the coefficients based on the activity type
-        HashMap<TransportMode, Double> alpha = null;
-        HashMap<TransportMode, Double> betaTime = null;
-        HashMap<TransportMode, Double> betaCost = null;
+        HashMap<TransportMode, Double> alpha;
+        HashMap<TransportMode, Double> betaTime;
+        HashMap<TransportMode, Double> betaCost;
         double betaTimeWalkTransport;
         double betaChangesTransport;
 
@@ -156,8 +98,6 @@ public class MNLModalChoiceModel implements Context {
 
         // probability distribution of transport modes
         HashMap<TransportMode, Double> choiceProbabilities = new HashMap<>();
-
-        double sumUtilitiesExp = 0.0;
 
         // add the transport modes that are available
         List<TransportMode> transportModeList = new ArrayList<TransportMode>();
@@ -218,10 +158,14 @@ public class MNLModalChoiceModel implements Context {
                     break;
             }
 
-            // compute probability choices for the modes available.
-            double utilityExp_i = Math.exp(utility_i);   // e^(utility)
-            choiceProbabilities.put(transportMode, utilityExp_i);  // save e^(utility)
-            sumUtilitiesExp += utilityExp_i;  // update the sum of e^(utility)
+            choiceProbabilities.put(transportMode, utility_i);  // save utility
+        }
+
+        // exponential of each utility
+        double sumUtilitiesExp = 0.0;
+        for (TransportMode transportMode: choiceProbabilities.keySet()){
+            choiceProbabilities.put(transportMode, Math.exp(choiceProbabilities.get(transportMode)));
+            sumUtilitiesExp += choiceProbabilities.get(transportMode);
         }
 
         // update map by dividing the exponential utilities by their sum

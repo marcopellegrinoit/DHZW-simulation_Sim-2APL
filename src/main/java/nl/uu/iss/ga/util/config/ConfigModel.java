@@ -121,14 +121,13 @@ public class ConfigModel {
         }
     }
     private void createAgentFromSchedule(Platform platform, EnvironmentInterface environmentInterface, ActivitySchedule schedule, ModeOfTransportTracker modeOfTransportTracker, ActivityTypeTracker activityTypeTracker) {
+        MNLModalChoiceModel modalChoiceModel = new MNLModalChoiceModel();
+        modalChoiceModel.setParameters(parametersReader);
 
         BeliefContext beliefContext = new BeliefContext(environmentInterface, modeOfTransportTracker, activityTypeTracker);
         RoutingSimmetricBeliefContext routingSimmetricBeliefContext = new RoutingSimmetricBeliefContext(environmentInterface);
         RoutingBusBeliefContext routingBusBeliefContext = new RoutingBusBeliefContext(environmentInterface);
         RoutingTrainBeliefContext routingTrainBeliefContext = new RoutingTrainBeliefContext(environmentInterface);
-
-        MNLModalChoiceModel modalChoiceModel = new MNLModalChoiceModel();
-        modalChoiceModel.setParameters(parametersReader);
 
         AgentArguments<TripTour> arguments = new AgentArguments<TripTour>()
                 .addContext(this.personReader.getPersons().get(schedule.getPid()))

@@ -3,6 +3,7 @@ package main.java.nl.uu.iss.ga.model.reader;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
+import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
 
 import java.io.File;
 import java.io.FileReader;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class MNLparametersReader {
+public class MNLparametersReader implements Context  {
 
     CSVReader reader;
     private static final Logger LOGGER = Logger.getLogger(MNLparametersReader.class.getName());
@@ -44,7 +45,75 @@ public class MNLparametersReader {
         this.betaTimeLeisure = new HashMap<>();
         this.betaCostLeisure = new HashMap<>();
 
-        readParameters(parameterFile, parameterSetIndex);
+        this.readParameters(parameterFile, parameterSetIndex);
+
+        this.addLiteratureCoefficients();
+    }
+
+    private void addLiteratureCoefficients() {
+        this.alphaWork.put(TransportMode.CAR_DRIVER, 1.0 * this.alphaWork.get(TransportMode.CAR_DRIVER));
+        this.alphaWork.put(TransportMode.CAR_PASSENGER, -3.0 * this.alphaWork.get(TransportMode.CAR_PASSENGER));
+        this.alphaWork.put(TransportMode.BUS_TRAM, -1.0 * this.alphaWork.get(TransportMode.BUS_TRAM));
+        this.alphaWork.put(TransportMode.TRAIN, -1.0 * this.alphaWork.get(TransportMode.TRAIN));
+
+        this.betaTimeWork.put(TransportMode.WALK, -0.04 * this.betaTimeWork.get(TransportMode.WALK));
+        this.betaTimeWork.put(TransportMode.BIKE, -0.03 * this.betaTimeWork.get(TransportMode.BIKE));
+        this.betaTimeWork.put(TransportMode.CAR_DRIVER, -0.02 * this.betaTimeWork.get(TransportMode.CAR_DRIVER));
+        this.betaTimeWork.put(TransportMode.CAR_PASSENGER, -0.02 * this.betaTimeWork.get(TransportMode.CAR_PASSENGER));
+        this.betaTimeWork.put(TransportMode.BUS_TRAM, -0.02 * this.betaTimeWork.get(TransportMode.BUS_TRAM));
+        this.betaTimeWork.put(TransportMode.TRAIN, -0.02 * this.betaTimeWork.get(TransportMode.TRAIN));
+
+        this.betaCostWork.put(TransportMode.CAR_DRIVER, -0.15 * this.betaCostWork.get(TransportMode.CAR_DRIVER));
+        this.betaCostWork.put(TransportMode.CAR_PASSENGER, -0.15 * this.betaCostWork.get(TransportMode.CAR_PASSENGER));
+        this.betaCostWork.put(TransportMode.BUS_TRAM, -0.1 * this.betaCostWork.get(TransportMode.BUS_TRAM));
+        this.betaCostWork.put(TransportMode.TRAIN, -0.1 * this.betaCostWork.get(TransportMode.TRAIN));
+
+        // school
+        this.alphaSchool.put(TransportMode.CAR_DRIVER, 1.0 * this.alphaSchool.get(TransportMode.CAR_DRIVER));
+        this.alphaSchool.put(TransportMode.CAR_PASSENGER, -3.0 * this.alphaSchool.get(TransportMode.CAR_PASSENGER));
+        this.alphaSchool.put(TransportMode.BUS_TRAM, -1.0 * this.alphaSchool.get(TransportMode.BUS_TRAM));
+        this.alphaSchool.put(TransportMode.TRAIN, -1.0 * this.alphaSchool.get(TransportMode.TRAIN));
+
+        this.betaTimeSchool.put(TransportMode.WALK, -0.04 * this.betaTimeSchool.get(TransportMode.WALK));
+        this.betaTimeSchool.put(TransportMode.BIKE, -0.03 * this.betaTimeSchool.get(TransportMode.BIKE));
+        this.betaTimeSchool.put(TransportMode.CAR_DRIVER, -0.02 * this.betaTimeSchool.get(TransportMode.CAR_DRIVER));
+        this.betaTimeSchool.put(TransportMode.CAR_PASSENGER, -0.02 * this.betaTimeSchool.get(TransportMode.CAR_PASSENGER));
+        this.betaTimeSchool.put(TransportMode.BUS_TRAM, -0.02 * this.betaTimeSchool.get(TransportMode.BUS_TRAM));
+        this.betaTimeSchool.put(TransportMode.TRAIN, -0.02 * this.betaTimeSchool.get(TransportMode.TRAIN));
+
+        this.betaCostSchool.put(TransportMode.CAR_DRIVER, -0.15 * this.betaCostSchool.get(TransportMode.CAR_DRIVER));
+        this.betaCostSchool.put(TransportMode.CAR_PASSENGER, -0.15 * this.betaCostSchool.get(TransportMode.CAR_PASSENGER));
+        this.betaCostSchool.put(TransportMode.BUS_TRAM, -0.1 * this.betaCostSchool.get(TransportMode.BUS_TRAM));
+        this.betaCostSchool.put(TransportMode.TRAIN, -0.1 * this.betaCostSchool.get(TransportMode.TRAIN));
+
+        // leisure
+        this.alphaLeisure.put(TransportMode.CAR_DRIVER, 1.0 * this.alphaLeisure.get(TransportMode.CAR_DRIVER));
+        this.alphaLeisure.put(TransportMode.CAR_PASSENGER, -1.0 * this.alphaLeisure.get(TransportMode.CAR_PASSENGER));
+        this.alphaLeisure.put(TransportMode.BUS_TRAM, -1.0 * this.alphaLeisure.get(TransportMode.BUS_TRAM));
+        this. alphaLeisure.put(TransportMode.TRAIN, -1.0 * this.alphaLeisure.get(TransportMode.TRAIN));
+
+        this.betaTimeLeisure.put(TransportMode.WALK, -0.03 * this.betaTimeLeisure.get(TransportMode.WALK));
+        this.betaTimeLeisure.put(TransportMode.BIKE, -0.02 * this.betaTimeLeisure.get(TransportMode.BIKE));
+        this.betaTimeLeisure.put(TransportMode.CAR_DRIVER, -0.018 * this.betaTimeLeisure.get(TransportMode.CAR_DRIVER));
+        this.betaTimeLeisure.put(TransportMode.CAR_PASSENGER, -0.018 * this.betaTimeLeisure.get(TransportMode.CAR_PASSENGER));
+        this.betaTimeLeisure.put(TransportMode.BUS_TRAM, -0.018 * this.betaTimeLeisure.get(TransportMode.BUS_TRAM));
+        this.betaTimeLeisure.put(TransportMode.TRAIN, -0.018 * this.betaTimeLeisure.get(TransportMode.TRAIN));
+
+        this.betaCostLeisure.put(TransportMode.CAR_DRIVER, -0.18 * this.betaCostLeisure.get(TransportMode.CAR_DRIVER));
+        this.betaCostLeisure.put(TransportMode.CAR_PASSENGER, -0.18 * this.betaCostLeisure.get(TransportMode.CAR_PASSENGER));
+        this.betaCostLeisure.put(TransportMode.BUS_TRAM, -0.12 * this.betaCostLeisure.get(TransportMode.BUS_TRAM));
+        this.betaCostLeisure.put(TransportMode.TRAIN, -0.12 * this.betaCostLeisure.get(TransportMode.TRAIN));
+
+        // non-map values
+        double BETA_WALKTIME_TRANSPORT = -0.03;
+        this.betaTimeWalkTransportWork = BETA_WALKTIME_TRANSPORT * this.betaTimeWalkTransportWork;
+        this.betaTimeWalkTransportSchool = BETA_WALKTIME_TRANSPORT * this.betaTimeWalkTransportSchool;
+        this.betaTimeWalkTransportLeisure = BETA_WALKTIME_TRANSPORT * this.betaTimeWalkTransportLeisure;
+
+        double BETA_CHANGES_TRANSPORT = -0.3;
+        this.betaChangesTransportWork = BETA_CHANGES_TRANSPORT * this.betaChangesTransportWork;
+        this.betaChangesTransportSchool = BETA_CHANGES_TRANSPORT * this.betaChangesTransportSchool;
+        this.betaChangesTransportLeisure = BETA_CHANGES_TRANSPORT * this.betaChangesTransportLeisure;
     }
 
     private void readParameters(File routingFile, int parameterSetIndex) {
