@@ -86,7 +86,6 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                             this.hid,
                             activityOrigin,
                             activityDestination,
-                            null,
                             routingSimmetric.getBeelineDistance(simmetricPostcodes)
                     );
                     this.tripTour.addTrip(trip);
@@ -105,6 +104,13 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                 // if the first mode was the car driver, the whole chain is by that mode
                 if (tripTour.getTripChain().indexOf(trip) != 0 & firstMode.equals(TransportMode.CAR_DRIVER)) {
                     trip.setTransportMode(TransportMode.CAR_DRIVER);
+
+                    String departurePostcode = trip.getDepartureActivity().getLocation().getPostcode();
+                    String arrivalPostcode = trip.getArrivalActivity().getLocation().getPostcode();
+                    TwoStringKeys simmetricPostcodes = new TwoStringKeys(departurePostcode, arrivalPostcode);
+                    double distance = routingSimmetric.getCarDistance(simmetricPostcodes);
+                    trip.setDistance(distance);
+
                     beliefContext.getModeOfTransportTracker().notifyTransportModeUsed(TransportMode.CAR_DRIVER, beliefContext.getToday(), trip.getArrivalActivity().getActivityType(), person.hasCarLicense(), person.getHousehold().hasCarOwnership(), trip.getBeelineDistance());
                 } else {
                     // either first trip of the chain, either the car driver was not chosen as first mode
@@ -125,6 +131,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                     } else {
                         walkPossible = true;
                         travelTimes.put(TransportMode.WALK, routingSimmetric.getWalkTime(simmetricPostcodes));
+                        travelDistances.put(TransportMode.WALK, routingSimmetric.getWalkDistance(simmetricPostcodes));
                     }
 
                     if (routingSimmetric.getBikeTime(simmetricPostcodes) == -1.0) {
@@ -132,6 +139,7 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                     } else {
                         bikePossible = true;
                         travelTimes.put(TransportMode.BIKE, routingSimmetric.getBikeTime(simmetricPostcodes));
+                        travelDistances.put(TransportMode.BIKE, routingSimmetric.getWalkDistance(simmetricPostcodes));
                     }
 
                     // if trip is feasible by car and the household has a car, the agent can be passenger
@@ -198,7 +206,17 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                     TransportMode transportMode = CumulativeDistribution.sampleWithCumulativeDistribution(choiceProbabilities);
                     trip.setTransportMode(transportMode);
 
-                    beliefContext.getModeOfTransportTracker().notifyTransportModeUsed(transportMode, beliefContext.getToday(), trip.getArrivalActivity().getActivityType(), person.hasCarLicense(), person.getHousehold().hasCarOwnership(), trip.getBeelineDistance());
+                    double distance = 0;
+                    if(transportMode.equals(TransportMode.WALK) | transportMode.equals(TransportMode.BIKE) | transportMode.equals(TransportMode.CAR_PASSENGER) | transportMode.equals(TransportMode.CAR_DRIVER)) {
+                        distance = travelDistances.get(transportMode);
+                    } else if (transportMode.equals(TransportMode.BUS_TRAM)) {
+                        distance = routingBus.getTotalDistance(departurePostcode, arrivalPostcode);
+                    } else {
+                        distance = routingTrain.getTotalDistance(departurePostcode, arrivalPostcode);
+                    }
+                    trip.setDistance(distance);
+
+                    beliefContext.getModeOfTransportTracker().notifyTransportModeUsed(transportMode, beliefContext.getToday(), trip.getArrivalActivity().getActivityType(), person.hasCarLicense(), person.getHousehold().hasCarOwnership(), trip.getDistance());
 
                     if (tripTour.getTripChain().indexOf(trip) == 0) {
                         firstMode = transportMode;

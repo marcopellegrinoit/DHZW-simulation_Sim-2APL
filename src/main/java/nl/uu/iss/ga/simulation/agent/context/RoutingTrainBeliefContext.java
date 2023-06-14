@@ -21,6 +21,8 @@ public class RoutingTrainBeliefContext implements Context {
     private HashMap<String, HashMap<String, Integer>> nChanges;
     private HashMap<String, HashMap<String, String>> postcodeStops;
     private HashMap<String, HashMap<String, Integer>> feasibleFlags;
+    private HashMap<String, HashMap<String, Double>> totalDistances;
+
 
 
     public RoutingTrainBeliefContext(EnvironmentInterface environmentInterface) {
@@ -33,6 +35,7 @@ public class RoutingTrainBeliefContext implements Context {
         this.nChanges = new HashMap<String, HashMap<String, Integer>>();
         this.postcodeStops = new HashMap<String, HashMap<String, String>>();
         this.feasibleFlags = new HashMap<String, HashMap<String, Integer>>();
+        this.totalDistances = new HashMap<String, HashMap<String, Double>>();
     }
 
     public void setAgentID(AgentID me) {
@@ -73,6 +76,9 @@ public class RoutingTrainBeliefContext implements Context {
     }
     public int getFeasibleFlag(String departure, String arrival){
         return this.feasibleFlags.get(departure).get(arrival);
+    }
+    public double getTotalDistance(String departure, String arrival){
+        return this.totalDistances.get(departure).get(arrival);
     }
 
     //******************************************************************************************************************
@@ -149,6 +155,16 @@ public class RoutingTrainBeliefContext implements Context {
             HashMap<String, Integer> tmpMap = new HashMap<String, Integer>();
             tmpMap.put(location2, feasibleFlag);
             this.feasibleFlags.put(location1, tmpMap);
+        }
+    }
+
+    public void addTotalDistance(String location1, String location2, double totalDistance) {
+        if(this.totalDistances.containsKey(location1)) {
+            this.totalDistances.get(location1).put(location2, totalDistance);
+        } else {
+            HashMap<String, Double> tmpMap = new HashMap<String, Double>();
+            tmpMap.put(location2, totalDistance);
+            this.totalDistances.put(location1, tmpMap);
         }
     }
 }

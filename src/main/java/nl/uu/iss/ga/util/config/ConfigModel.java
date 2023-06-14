@@ -194,6 +194,7 @@ public class ConfigModel {
                             routingBusBeliefContext.addChanges(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingBusReader.getChange(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
                             routingBusBeliefContext.addPostcodeStop(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingBusReader.getPostcodeStop(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
                             routingBusBeliefContext.addFeasibleFlag(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingBusReader.getFeasibleFlag(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+                            routingBusBeliefContext.addTotalDistance(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingBusReader.getTotalDistance(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
 
                             // add train routing data only if the trip goes outside. no need on useless empty data for trips inside or completely outside DHZW
                             if (previousActivity.getLocation().isInDHZW() ^ nextActivity.getLocation().isInDHZW()) {   // XOR operator
@@ -205,6 +206,8 @@ public class ConfigModel {
                                 routingTrainBeliefContext.addChanges(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingTrainReader.getChange(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
                                 routingTrainBeliefContext.addPostcodeStop(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingTrainReader.getPostcodeStop(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
                                 routingTrainBeliefContext.addFeasibleFlag(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingTrainReader.getFeasibleFlag(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+                                routingTrainBeliefContext.addTotalDistance(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode(), this.routingTrainReader.getTotalDistance(previousActivity.getLocation().getPostcode(), nextActivity.getLocation().getPostcode()));
+
                             }
                         }
 

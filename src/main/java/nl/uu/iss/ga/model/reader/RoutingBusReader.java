@@ -20,6 +20,7 @@ public class RoutingBusReader {
     private final HashMap<String, HashMap<String, Integer>> nChanges;
     private final HashMap<String, HashMap<String, String>> postcodeStops;
     private final HashMap<String, HashMap<String, Integer>> feasibleFlags;
+    private HashMap<String, HashMap<String, Double>> totalDistances;
 
 
     public RoutingBusReader(List<File> routingFile) {
@@ -29,6 +30,7 @@ public class RoutingBusReader {
         this.nChanges = new HashMap<>();
         this.postcodeStops = new HashMap<>();
         this.feasibleFlags = new HashMap<>();
+        this.totalDistances = new HashMap<>();
 
         for(File f : routingFile) {
             readTravelTimes(f);
@@ -54,7 +56,9 @@ public class RoutingBusReader {
     public int getFeasibleFlag(String location1, String location2) {
         return this.feasibleFlags.get(location1).get(location2);
     }
-
+    public Double getTotalDistance(String location1, String location2) {
+        return this.totalDistances.get(location1).get(location2);
+    }
 
     private void readTravelTimes(File routingFile) {
         LOGGER.log(Level.INFO, "Reading routing bus file " + routingFile.toString());
@@ -74,8 +78,10 @@ public class RoutingBusReader {
                 double busDistance = Double.parseDouble(line[15].trim());
                 double walkTime = Double.parseDouble(line[9].trim());
                 int nChange = Integer.parseInt(line[12].trim());
+                double totalDistance = Double.parseDouble(line[13].trim());
                 String postcodeStop = line[17].trim();
                 int feasibleFlag = Integer.parseInt(line[18].trim());
+
 
                 // Add to the HashMaps
                 if(this.busTimes.containsKey(departure)) {
@@ -86,6 +92,7 @@ public class RoutingBusReader {
                     this.nChanges.get(departure).put(arrival, nChange);
                     this.postcodeStops.get(departure).put(arrival, postcodeStop);
                     this.feasibleFlags.get(departure).put(arrival, feasibleFlag);
+                    this.totalDistances.get(departure).put(arrival, totalDistance);
                 } else {
                     // create the whole structure for such departure node
                     HashMap <String, Double> tmp = new HashMap<String, Double>();
@@ -111,6 +118,10 @@ public class RoutingBusReader {
                     tmpInt.clear();
                     tmpInt.put(arrival, feasibleFlag);
                     this.feasibleFlags.put(departure, tmpInt);
+
+                    tmp.clear();
+                    tmp.put(arrival, totalDistance);
+                    this.totalDistances.put(departure, tmp);
                 }
 
             }

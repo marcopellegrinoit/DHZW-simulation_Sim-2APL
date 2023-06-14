@@ -20,7 +20,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ModeOfTransportTracker {
 
     private Map<TransportMode, AtomicInteger> totalModeMap;
-    private Map<TransportMode, AtomicInteger> beelineMap;
+    private Map<TransportMode, AtomicInteger> distanceMap;
+    private Map<ActivityType, AtomicInteger> distanceActivityMap;
+    private Map<ActivityType, AtomicInteger> activityMap;
     private AtomicInteger[][] modeDayMap = new AtomicInteger[DayOfWeek.values().length][TransportMode.values().length];
     private AtomicInteger[][] modeActivityMap = new AtomicInteger[ActivityType.values().length][TransportMode.values().length];
     private AtomicInteger[][] modeCarLicenseMap = new AtomicInteger[2][TransportMode.values().length];
@@ -28,14 +30,24 @@ public class ModeOfTransportTracker {
 
     public void reset() {
         // Initialise map for overall mode frequencies
-        beelineMap = new ConcurrentHashMap<>();
+        distanceMap = new ConcurrentHashMap<>();
         for(TransportMode mode : TransportMode.values()) {
-            beelineMap.put(mode, new AtomicInteger(0));
+            distanceMap.put(mode, new AtomicInteger(0));
+        }
+
+        distanceActivityMap = new ConcurrentHashMap<>();
+        for(ActivityType activity : ActivityType.values()) {
+            distanceActivityMap.put(activity, new AtomicInteger(0));
         }
 
         totalModeMap = new ConcurrentHashMap<>();
         for(TransportMode mode : TransportMode.values()) {
             totalModeMap.put(mode, new AtomicInteger(0));
+        }
+
+        activityMap = new ConcurrentHashMap<>();
+        for(ActivityType activity : ActivityType.values()) {
+            activityMap.put(activity, new AtomicInteger(0));
         }
 
         // Initialise map for mode x day frequencies
@@ -67,12 +79,13 @@ public class ModeOfTransportTracker {
 
     public void notifyTransportModeUsed(TransportMode mode, DayOfWeek day, ActivityType activityType, boolean hasCarLicense, boolean hasCar, double distance) {
         this.totalModeMap.get(mode).getAndIncrement();
+        this.activityMap.get(activityType).getAndIncrement();
         this.modeDayMap[day.ordinal()][mode.ordinal()].getAndIncrement();
-        this.modeActivityMap[activityType.ordinal()][mode.ordinal()].getAndIncrement();
         this.modeActivityMap[activityType.ordinal()][mode.ordinal()].getAndIncrement();
         this.modeCarLicenseMap[hasCarLicense ? 1 : 0][mode.ordinal()].getAndIncrement();
         this.modeCarOwnershipMap[hasCar ? 1 : 0][mode.ordinal()].getAndIncrement();
-        this.beelineMap.get(mode).addAndGet((int) distance);
+        this.distanceMap.get(mode).addAndGet((int) distance);
+        this.distanceActivityMap.get(activityType).addAndGet((int) distance);
     }
 
     public Map<TransportMode, AtomicInteger> getTotalModeMap() {
@@ -91,7 +104,7 @@ public class ModeOfTransportTracker {
         return this.modeCarOwnershipMap;
     }
     public Map<TransportMode, AtomicInteger> getDistanceMap() {
-        return this.beelineMap;
+        return this.distanceMap;
     }
 
     public void saveTotalModeToCsv(File outputDir) throws IOException {
@@ -111,18 +124,43 @@ public class ModeOfTransportTracker {
         writer.close();
     }
 
-    public void saveTotalDistanceToCsv(File outputDir) throws IOException {
-        CSVWriter writer = new CSVWriter(new FileWriter(new File(outputDir, "beeline.csv")));
+    public void saveDistanceToCsv(File outputDir) throws IOException {
+        // per mode
+        CSVWriter writer = new CSVWriter(new FileWriter(new File(outputDir, "mode_distance.csv")));
 
-        String[] row = new String[2];
+        String[] row = new String[3];
         row[0] = "mode_choice";
         row[1] = "total_distance";
+        row[2] = "n_trips";
 
         writer.writeNext(row);
         for (TransportMode mode : TransportMode.values()) {
-            row = new String[2];
+            row = new String[3];
             row[0] = String.valueOf(mode);
-            row[1] = String.valueOf(this.beelineMap.get(mode));
+            int distance = this.distanceMap.get(mode).intValue();
+            int n = this.totalModeMap.get(mode).intValue();
+            row[1] = String.valueOf(distance);
+            row[2] = String.valueOf(n);
+            writer.writeNext(row);
+        }
+        writer.close();
+
+        // per activity
+        writer = new CSVWriter(new FileWriter(new File(outputDir, "activity_distance.csv")));
+
+        row = new String[3];
+        row[0] = "activity_type";
+        row[1] = "total_distance";
+        row[2] = "n_trips";
+
+        writer.writeNext(row);
+        for (ActivityType activity : ActivityType.values()) {
+            row = new String[3];
+            row[0] = String.valueOf(activity);
+            int distance = this.distanceActivityMap.get(activity).intValue();
+            int n = this.activityMap.get(activity).intValue();
+            row[1] = String.valueOf(distance);
+            row[2] = String.valueOf(n);
             writer.writeNext(row);
         }
         writer.close();

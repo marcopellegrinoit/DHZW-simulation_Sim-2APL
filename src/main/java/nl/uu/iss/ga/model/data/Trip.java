@@ -6,8 +6,6 @@ import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 import java.util.logging.Level;
 
 public class Trip {
-    private boolean personDriver;
-    private boolean personPassenger;
     private final long pid;
     private final long hid;
     private final Activity departureActivity;
@@ -15,15 +13,15 @@ public class Trip {
     private final double beelineDistance;
     private final int activityTimeGap;
     private TransportMode transportMode;
+    private double distance;
 
-    public Trip(long pid, long hid, Activity departureActivity, Activity arrivalActivity, TransportMode transportMode, double beelineDistance) {
+    public Trip(long pid, long hid, Activity departureActivity, Activity arrivalActivity, double beelineDistance) {
         this.pid = pid;
         this.hid = hid;
         this.departureActivity = departureActivity;
         this.arrivalActivity = arrivalActivity;
         this.activityTimeGap = departureActivity.getEndTime().getSeconds() - arrivalActivity.getStartTime().getSeconds();
         this.beelineDistance = beelineDistance;
-        this.transportMode = transportMode;
     }
 
     @Override
@@ -44,16 +42,18 @@ public class Trip {
     // region getter and setter
 
     public boolean isPersonDriver() {
-        return this.personDriver;
-    }
-    public void setPersonDriver(boolean personDriver) {
-        this.personDriver = personDriver;
-    }
-    public void setPersonPassenger(boolean personPassenger) {
-        this.personPassenger = personPassenger;
+        if (transportMode == null) {
+            return false;
+        } else {
+            return transportMode.equals(TransportMode.CAR_DRIVER);
+        }
     }
     public boolean isPersonPassenger() {
-        return this.personPassenger;
+        if (transportMode == null) {
+            return false;
+        } else {
+            return transportMode.equals(TransportMode.CAR_PASSENGER);
+        }
     }
     public long getPid() {
         return this.pid;
@@ -74,6 +74,13 @@ public class Trip {
 
     public TransportMode getTransportMode(){return this.transportMode;}
     public void setTransportMode(TransportMode transportMode){this.transportMode = transportMode;}
+
+    public void setDistance (double distance) {
+        this.distance = distance;
+    }
+    public double getDistance (){
+        return this.distance;
+    }
 
     // endregion getter and setter
 }
