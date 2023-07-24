@@ -75,7 +75,7 @@ In the [resource](src/main/resources/) directory, an example [configuration](src
 
 ## Detailled explanation
 -   [See this page](attributes.md) for the agents attributes and the information needed for the simulation
--   [See this page](model_process.md) for a detaiiled explanation of the simulation.
+-   [See this page](model_process.md) for a detailled explanation of the simulation.
 
 
 ## License
