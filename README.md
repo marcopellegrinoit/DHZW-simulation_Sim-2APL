@@ -1,17 +1,16 @@
 ![GitHub](https://img.shields.io/badge/license-GPL--3.0-blue)
 
-## Agent-Based Simulation of Human Mobility Behaviour
+# Agent-Based Simulation of Human Mobility Behaviour
 
-#### _Utrecht University, The Netherlands. 2022 - 2023_
+**Utrecht University, The Netherlands. 2022 - 2023**
 
-#### _Author: Marco Pellegrino_
+Author: Marco Pellegrino
 
-#### _Contribution: Jan de Mooij, Tabea Sonnenschein, Mehdi Dastani, Dick Ettema, Brian Logan, Judith A. Verstegen_
+Contributors: Jan de Mooij, Tabea Sonnenschein, Mehdi Dastani, Dick Ettema, Brian Logan, Judith A. Verstegen
 
 ## Description
 
-A large-scale data-driven agent-based simulation model where individual agents decide the mode choice (mean of transport) for given activity schedules. Case study of the Zuid-West district of Den Haag, The Netherlands.  
-The model is firstly calibrated with observed aggregated data from the ODIN dataset. Then, new sustainable AI-powered buses are added as a mode choice option, to simulate the mobility behaviour demand change.
+A large-scale data-driven agent-based model designed to simulate individual agents' mode choice decisions for specific activity schedules within Den Haag's Zuid-West district in The Netherlands. The model integrates real-world data to precisely capture transportation preferences, providing a valuable tool for enhancing sustainable urban planning and informing transportation policy.
 
 ## Invoking program
 
@@ -23,6 +22,8 @@ In order to use the JAR file, make sure to use the Java version also used by Mav
 ```plaintext
 $ java -jar sim2apl-dhzw-simulation-1.0-SNAPSHOT-jar-with-dependencies.jar [args]
 ```
+
+The file [`args_example.txt`](src/main/resources/args_example.txt) contains the arguments to launch the simulation.
 
 ## Build instructions
 
@@ -70,8 +71,12 @@ $ mvn -U clean install
 The application requires various arguments, either when invoked from the command line or when used in an IDE.  
 Invoke the program with the argument `--help`
 
-An example of a configuration file (using the [TOML](https://github.com/toml-lang/toml) language) is given in  
-[src/main/resources/config\_full.toml](src/main/resources/config_DHZW_full.toml)
+In the [resource](src/main/resources/) directory, an example [configuration](src/main/resources/config_full.toml) TOML file is given.
+
+## Detailled explanation
+-   [See this page](attributes.md) for the agents attributes and the information needed for the simulation
+-   [See this page](model_process.md) for a detaiiled explanation of the simulation.
+
 
 ## License
 

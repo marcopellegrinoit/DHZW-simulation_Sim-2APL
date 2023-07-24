@@ -1,6 +1,5 @@
 package main.java.nl.uu.iss.ga.util;
 
-import main.java.nl.uu.iss.ga.model.data.dictionary.ActivityType;
 import main.java.nl.uu.iss.ga.model.data.dictionary.TransportMode;
 import main.java.nl.uu.iss.ga.model.reader.MNLparametersReader;
 import nl.uu.cs.iss.ga.sim2apl.core.agent.Context;
@@ -15,40 +14,20 @@ public class MNLModalChoiceModel implements Context {
     // https://www.rrreis.nl/nieuwe-tarieven-en-prijzen-vanaf-1-januari-2023#:~:text=De%20totaalprijs%20voor%20reizen%20op,voor%20RRReis%20wordt%20%E2%82%AC%200%2C196.
     private static final double PUBLIC_TRANSPORT_COST_KM = 0.2;
     private static final double PUBLIC_TRANSPORT_BASE_FEE = 1.08;
-    private HashMap<TransportMode, Double> alphaWork = new HashMap<>();
-    private HashMap<TransportMode, Double> betaTimeWork = new HashMap<>();
-    private HashMap<TransportMode, Double> betaCostWork = new HashMap<>();
-    private HashMap<TransportMode, Double> alphaSchool = new HashMap<>();
-    private HashMap<TransportMode, Double> betaTimeSchool = new HashMap<>();
-    private HashMap<TransportMode, Double> betaCostSchool = new HashMap<>();
-    private HashMap<TransportMode, Double> alphaLeisure = new HashMap<>();
-    private HashMap<TransportMode, Double> betaTimeLeisure = new HashMap<>();
-    private HashMap<TransportMode, Double> betaCostLeisure = new HashMap<>();
-    private double betaTimeWalkTransportWork;
-    private double betaTimeWalkTransportSchool;
-    private double betaTimeWalkTransportLeisure;
-    private double betaChangesTransportWork;
-    private double betaChangesTransportSchool;
-    private double betaChangesTransportLeisure;
+    private HashMap<TransportMode, Double> alpha = new HashMap<>();
+    private HashMap<TransportMode, Double> betaTime = new HashMap<>();
+    private HashMap<TransportMode, Double> betaCost = new HashMap<>();
+
+    private double betaTimeWalkTransport;
+    private double betaChangesTransport;
 
     public void setParameters(MNLparametersReader parametersReader){
-        this.alphaWork = parametersReader.getAlphaWork();
-        this.betaTimeWork = parametersReader.getBetaTimeWork();
-        this.betaCostWork = parametersReader.getBetaCostWork();
-        this.alphaSchool = parametersReader.getAlphaSchool();
-        this.betaTimeSchool = parametersReader.getBetaTimeSchool();
-        this.betaCostSchool = parametersReader.getBetaCostSchool();
-        this.alphaLeisure = parametersReader.getAlphaLeisure();
-        this.betaTimeLeisure = parametersReader.getBetaTimeLeisure();
-        this.betaCostLeisure = parametersReader.getBetaCostLeisure();
+        this.alpha = parametersReader.getAlpha();
+        this.betaTime = parametersReader.getBetaTime();
+        this.betaCost = parametersReader.getBetaCost();
 
-        this.betaTimeWalkTransportWork = parametersReader.getBetaTimeWalkTransportWork();
-        this.betaTimeWalkTransportSchool = parametersReader.getBetaTimeWalkTransportSchool();
-        this.betaTimeWalkTransportLeisure = parametersReader.getBetaTimeWalkTransportLeisure();
-
-        this.betaChangesTransportWork = parametersReader.getBetaChangesTransportWork();
-        this.betaChangesTransportSchool = parametersReader.getBetaChangesTransportSchool();
-        this.betaChangesTransportLeisure = parametersReader.getBetaChangesTransportLeisure();
+        this.betaTimeWalkTransport = parametersReader.getBetaTimeWalkTransport();
+        this.betaChangesTransport = parametersReader.getBetaChangesTransport();
     }
 
     public HashMap<TransportMode, Double> getChoiceProbabilities (
@@ -65,36 +44,9 @@ public class MNLModalChoiceModel implements Context {
             double walkTimeTrain,
             double busTimeTrain,
             double busDistanceTrain,
-            int nChangesTrain,
-            ActivityType departureType,
-            ActivityType arrivalType) {
+            int nChangesTrain) {
 
         // select the coefficients based on the activity type
-        HashMap<TransportMode, Double> alpha;
-        HashMap<TransportMode, Double> betaTime;
-        HashMap<TransportMode, Double> betaCost;
-        double betaTimeWalkTransport;
-        double betaChangesTransport;
-
-        if (departureType.equals(ActivityType.WORK) | arrivalType.equals(ActivityType.WORK)) {
-            alpha = alphaWork;
-            betaTime = betaTimeWork;
-            betaCost = betaCostWork;
-            betaTimeWalkTransport = betaTimeWalkTransportWork;
-            betaChangesTransport = betaChangesTransportWork;
-        } else if (departureType.equals(ActivityType.SCHOOL) | arrivalType.equals(ActivityType.SCHOOL)) {
-            alpha = alphaSchool;
-            betaTime = betaTimeSchool;
-            betaCost = betaCostSchool;
-            betaTimeWalkTransport = betaTimeWalkTransportSchool;
-            betaChangesTransport = betaChangesTransportSchool;
-        } else {
-            alpha = alphaLeisure;
-            betaTime = betaTimeLeisure;
-            betaCost = betaCostLeisure;
-            betaTimeWalkTransport = betaTimeWalkTransportLeisure;
-            betaChangesTransport = betaChangesTransportLeisure;
-        }
 
         // probability distribution of transport modes
         HashMap<TransportMode, Double> choiceProbabilities = new HashMap<>();

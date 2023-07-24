@@ -2,11 +2,9 @@ package main.java.nl.uu.iss.ga.util.config;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.annotation.Arg;
-import net.sourceforge.argparse4j.impl.action.StoreTrueArgumentAction;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
-import org.apache.commons.math3.distribution.BetaDistribution;
 import org.tomlj.Toml;
 import org.tomlj.TomlParseResult;
 import org.tomlj.TomlTable;
@@ -15,11 +13,8 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -45,15 +40,6 @@ public class ArgParse {
 
     private String descriptor;
 
-    @Arg(dest = "connectpansim")
-    private boolean connectpansim;
-
-    @Arg(dest = "writegraph")
-    private boolean writegraph;
-
-    @Arg(dest = "suppresscalculations")
-    private boolean suppresscalculations;
-
     @Arg(dest = "logproperties")
     private File logproperties;
 
@@ -65,9 +51,6 @@ public class ArgParse {
 
     @Arg(dest = "parametersPath")
     private String parametersPath;
-
-    private boolean saveStateDataFrames = false;
-    private boolean saveVisitsDataFrames = false;
 
     private Random random;
 
@@ -88,6 +71,11 @@ public class ArgParse {
         }
     }
 
+    /**
+     * The method read the TOML configuration file and initialise variables
+     * @param p
+     * @throws ArgumentParserException
+     */
     private void processConfigFile(ArgumentParser p) throws ArgumentParserException {
         TomlParseResult result = null;
         try {
@@ -120,13 +108,6 @@ public class ArgParse {
                     this.random = new Random(result.getLong("simulation.seed"));
                 } else {
                     this.random = new Random();
-                }
-
-                if(result.contains("savestate")) {
-                    this.saveStateDataFrames = result.getBoolean("savestate");
-                }
-                if(result.contains("savevisits")) {
-                    this.saveVisitsDataFrames = result.getBoolean("savevisits");
                 }
 
                 this.descriptor = result.getString("output.descriptor");
@@ -167,26 +148,6 @@ public class ArgParse {
 
     public String getDescriptor() {
         return descriptor;
-    }
-
-    public boolean isConnectpansim() {
-        return connectpansim;
-    }
-
-    public boolean writeGraph() {
-        return writegraph;
-    }
-
-    public boolean suppressCalculations() {
-        return suppresscalculations;
-    }
-
-    public boolean saveStateDataFrames() {
-        return saveStateDataFrames;
-    }
-
-    public boolean saveVisitsDataFrames() {
-        return saveVisitsDataFrames;
     }
 
     public int getThreads() {
@@ -245,11 +206,14 @@ public class ArgParse {
         }
     }
 
+    /**
+     * The method reads the command line arguments and initialise the correspondent variables
+     * @return
+     */
     private ArgumentParser getParser() {
         ArgumentParser parser = ArgumentParsers.newFor("2APL/SimpleEpiDemic Disease Simulation").build()
                 .defaultHelp(true)
-                .description("A ecological simulation environment for simulation of human acceptance of measures" +
-                        " aimed at reducing spread of novel diseases");
+                .description("Agent-based simulation of mode choices of a population");
 
         parser.addArgument("--config")
                 .type(File.class)
@@ -261,76 +225,19 @@ public class ArgParse {
                 .type(Integer.class)
                 .required(true)
                 .dest("parametersetindex")
-                .help("Specify the index of the parameter set for the MNL model");
+                .help("Specify the index of the parameter set to use from the parameter file");
 
         parser.addArgument("--output_file")
                 .type(String.class)
                 .required(true)
                 .dest("outputPath")
-                .help("specifity the relative output file path from the resources directory");
+                .help("Specify the file where a new line will be added with the mode choice distribution");
 
         parser.addArgument("--parameter_file")
                 .type(String.class)
                 .required(true)
                 .dest("parametersPath")
-                .help("specifity the relative file path of the parmeter sets from the resources directory");
-
-        ArgumentGroup behaviorCalibration = parser.addArgumentGroup("Behavior Calibration")
-                .description("Arguments used for calibrating the behavior model");
-
-        behaviorCalibration.addArgument("--mode-liberal", "-ml")
-                .required(true)
-                .type(double.class)
-                .dest("modeliberal")
-                .help("The mode of the government attitude distribution of liberal voting agents");
-
-        behaviorCalibration.addArgument("--mode-conservative", "-mc")
-                .required(true)
-                .type(double.class)
-                .dest("modeconservative")
-                .help("The mode of the government attitude distribution of liberal voting agents");
-
-        ArgumentGroup diseaseCalibration = parser.addArgumentGroup("Disease Calibration")
-                .description("Arguments used for calibrating the disease model");
-
-        diseaseCalibration.addArgument("--disease-seed-days")
-                .required(false)
-                .type(int.class)
-                .dest("diseaseseeddays")
-                .help("The number of days at the beginning of simulation to seed the --disease-seed-number of agents with an infected state." +
-                        " If this argument is also specified in the TOML configuration, the CLI value takes precedent. If no value is specified," +
-                        " no agents are seeded with the disease");
-
-        diseaseCalibration.addArgument("--disease-seed-number")
-                .required(false)
-                .type(int.class)
-                .dest("diseaseseednumber")
-                .help("The number of agents at the beginning of simulation to seed during the initial --disease-seed-days with an infected state." +
-                        " If this argument is also specified in the TOML configuration, the CLI value takes precedent. If no value is specified," +
-                        " no agents are seeded with the disease");
-
-        diseaseCalibration.addArgument("--disease-seed-additional-frequency")
-                .required(false)
-                .type(Integer.class)
-                .dest("additionaldiseasedays")
-                .help("A number of days between additional seeding of infectious agents. After initial seeding has finished, " +
-                        "an additional --disease-seed-number of agents will be seeded with an infected state every " +
-                        "--disease-seed-additional-frequency days. E.g., if the initial number of days is 5, and this value is " +
-                        "10, agents will be seeded on the 1th, 2nd, 3th, 4th, 5th, 10th, 20th, 30th etc days of the simulation." +
-                        " If this argument is also specified in the TOML configuration, the CLI value takes precedent. If no value is specified," +
-                        " no agents are seeded with the disease after the initial seeding");
-
-        diseaseCalibration.addArgument("--disease-seed-additional-number")
-                .required(false)
-                .type(Integer.class)
-                .dest("additionaldiseasedaysnum")
-                .help("The number of agents to seed during additional seeding, " +
-                        "an additional --disease-seed-additional-number (or --disease-seed-number if this argument is not set) " +
-                        "of agents will be seeded with an infected state every " +
-                        "--disease-seed-additional-frequency days. E.g., if the initial number of days is 5, and this value is " +
-                        "10, agents will be seeded on the 1th, 2nd, 3th, 4th, 5th, 10th, 20th, 30th etc days of the simulation." +
-                        " If this argument is also specified in the TOML configuration, the CLI value takes precedent. If no value is specified," +
-                        " no agents are seeded with the disease after the initial seeding");
+                .help("specify the file containing the values of the parameters");
 
         ArgumentGroup optimization = parser.addArgumentGroup("Runtime optimization");
 
@@ -346,45 +253,6 @@ public class ArgParse {
                 .required(false)
                 .dest("logproperties")
                 .setDefault(new File("logging.properties"));
-
-        optimization.addArgument("--connect-pansim", "-c")
-                .type(Boolean.class)
-                .required(false)
-                .setDefault(false)
-                .action(new StoreTrueArgumentAction())
-                .dest("connectpansim")
-                .help("If this argument is present, the simulation will run in PANSIM mode, meaning it will send" +
-                        "the generated behavior to the PANSIM environment. If absent, no PANSIM connection is required," +
-                        "but behavior is not interpreted");
-
-        optimization.addArgument("--write-graph", "-g")
-                .type(Boolean.class)
-                .required(false)
-                .setDefault(false)
-                .action(new StoreTrueArgumentAction())
-                .dest("writegraph")
-                .help("If this argument is passed, the program will, every time step, write the state of each agent," +
-                        "as well as each visit-pair of agents who have been in the same location at the same time, to " +
-                        "a file. This can be used to construct a network graph of interactions over time, but slows " +
-                        "the simulation down significantly, and is more demanding on memory resources.");
-
-        optimization.addArgument("--suppress-calculations")
-                .type(Boolean.class)
-                .required(false)
-                .setDefault(false)
-                .action(new StoreTrueArgumentAction())
-                .dest("suppresscalculations")
-                .help("Suppress all secondary calculations not required to run the simulation, such as calculation of" +
-                        "the radius of gyration, visit averages, and everything that is only calculated to perform" +
-                        "logging");
-
-        optimization.addArgument("--output-dir", "-o")
-                .type(String.class)
-                .required(false)
-                .dest("outputdir")
-                .setDefault(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
-                .help("Specify a sub directory of \"output\" where output files of the behavior model will be stored." +
-                        " By default, the current time code will be used");
 
         return parser;
     }

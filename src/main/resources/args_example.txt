@@ -1,0 +1,8 @@
+--config
+src/main/resources/config_DHZW_full.toml
+--parameterset_index
+1
+--output_file
+src/main/resources/baseline_parameterset/output_proportions.csv
+--parameter_file
+src/main/resources/baseline_parameterset/parameterset.csv

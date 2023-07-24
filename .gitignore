@@ -13,9 +13,15 @@ buildNumber.properties
 
 .idea
 
+src/main/resources/routing
+
 src/main/resources/DHZW_full
 src/main/resources/DHZW_sample
 src/main/resources/DHZW_sample_1
+
+src/main/resources/config_DHZW_sample.toml
+src/main/resources/config_DHZW_sample_1.toml
+
 .ipynb_checkpoints
 
 log/*.log

@@ -9,7 +9,7 @@ df_simulations <- read.csv('output_proportions.csv')
 
 # read real ODiN proportions
 setwd(this.dir())
-setwd('../../../../../DHZW_modal_choice_external_trips/output')
+setwd('../../../../../DHZW_assign_location/data/processed/analysis/ODiN')
 df_real <- read.csv('mode_choice_overall.csv')
 
 # format ODiN proportions to match the other dataframes

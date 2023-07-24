@@ -57,8 +57,6 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
             double walkTimeTrain = 0;
             double busTimeTrain = 0;
             double busDistanceTrain = 0;
-            String postcodeStopBus = null;
-            String postcodeStopTrain = null;
 
             boolean trainPossible = false;
             boolean busPossible = false;
@@ -166,7 +164,6 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                         travelDistances.put(TransportMode.BUS_TRAM, routingBus.getBusDistance(departurePostcode, arrivalPostcode));
                         nChangesBus = routingBus.getChange(departurePostcode, arrivalPostcode);
                         walkTimeBus = routingBus.getWalkTime(departurePostcode, arrivalPostcode);
-                        postcodeStopBus = routingBus.getPostcodeDHZW(departurePostcode, arrivalPostcode);
                     }
 
                     // if the trip is partially outside, the train could be possible
@@ -179,7 +176,6 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                             walkTimeTrain = routingTrain.getWalkTime(departurePostcode, arrivalPostcode);
                             busTimeTrain = routingTrain.getBusTime(departurePostcode, arrivalPostcode);
                             busDistanceTrain = routingTrain.getBusDistance(departurePostcode, arrivalPostcode);
-                            postcodeStopTrain = routingTrain.getPostcodeDHZW(departurePostcode, arrivalPostcode);
                         }
                     }
 
@@ -198,9 +194,8 @@ public class ExecuteTourPlan extends RunOncePlan<TripTour> {
                             walkTimeTrain,
                             busTimeTrain,
                             busDistanceTrain,
-                            nChangesTrain,
-                            trip.getDepartureActivity().getActivityType(),
-                            trip.getArrivalActivity().getActivityType());
+                            nChangesTrain
+                    );
 
                     // decide the modal choice
                     TransportMode transportMode = CumulativeDistribution.sampleWithCumulativeDistribution(choiceProbabilities);
