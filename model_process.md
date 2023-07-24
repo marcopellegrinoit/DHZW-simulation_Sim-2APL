@@ -68,3 +68,9 @@ The trip ordering is intuitive, as the agent is more likely to choose the car as
 On the other hand, if the agent does not select the car driver mode for the longest leg, they will no longer have the option to choose the car driver mode for the rest of the tour. This constraint ensures that once an agent has chosen an alternative mode of transportation, they cannot switch to the car driver mode.
 
 Furthermore, it is important to note that the car driver mode is filtered based on the agent's car license and household vehicle ownership attributes. In addition, the car passenger mode is available only to agents with a household owning a car.
+
+## Transport model
+The probability mode choice distribution is computed using a multinomial logit (MNL) model. Utilities are scored for each mode and the probability mode choice distribution is computed.
+Coefficients can be initialised with any value desired. This can also be used for sensitivity analysis and calibration.
+The parameter sets file needs to be specified by the command line with the argument `parameter_file`. In addition, each row of this file is a different parameter set (useful when iteratively running different parameter sets for sensitivity analysis or calibration). Hence, the argument `parameterset_index` specifies the index within such file.
+[`baselines_parameterset.csv`](src/main/resources/baseline_parameterset/parameterset.csv) contains the a parameter set where all the values are neutral. 
