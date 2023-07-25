@@ -18,25 +18,34 @@ Considering the simulation of private transport, it is indeed necessary to imple
 
 ### Activity tours as goals
 
-Within the Sim2APL framework, agents adopt home-to-home activity tours as their goals. As a result, each day, agents receive a trigger for the home-to-home goals of the day, which prompt them to execute the corresponding plans. In these plans, the home-to-home trip tours are computed, and the mode choices for each trip within the tour are simulated.
+Within the Sim2APL framework, agents adopt [`home-to-home activity tours`](src/main/java/nl/uu/iss/ga/model/data
+/ActivityTour.java
+)s as their goals. As a result, each day, agents receive a trigger for the home-to-home goals of the day, which prompt them to execute the corresponding [`plan`](src/main/java/nl/uu/iss/ga/simulation/agent/plan/activity
+/ExecuteTourPlan.java). In these plans, the [`home-to-home trip tours`](src/main/java/nl/uu/iss/ga/model/data
+/TripTour.java) are computed, and the mode choices for each trip within the tour are simulated.
 
 ### Simulation Initialisation
 
 When launching the simulation, the platform undergoes the following operations to prepare for execution:
 
-Initialise Counters for Output:
+[`Initialise Counters`](src/main/java/nl/uu/iss/ga/util/tracking
+/ModeOfTransportTracker.java
+) for Output:
 
 *   Various counters for output metrics, such as mode choice distribution, are initialised to track and record simulation results.
 
 Initialise Agents' Demographics and Weekly Activity Schedule:
 
-*   Agents' demographics and their weekly activity schedules are loaded from a file to populate the simulation with realistic individual characteristics and routines.
+*   Agents' demographics and their weekly [`activity schedules`](src/main/java/nl/uu/iss/ga/model/reader
+/ActivityFileReader.java) are loaded from a file to populate the simulation with realistic individual characteristics and routines.
 
-Initialise Travel Information and Transport Model Parameters:
+Initialise Travel Information and [`Transport Model Parameters`](src/main/java/nl/uu/iss/ga/model/reader
+/MNLparametersReader.java):
 
 *   Travel information, including data on different locations and available transportation options, and transport model parameters, are loaded from a file to inform agents' travel decisions.
 
-For each agent, the following steps are executed:
+For each agent, the following steps are [`executed`](src/main/java/nl/uu/iss/ga/util/config
+/ConfigModel.java):
 
 Group Same-Day Activities into Home-to-Home Tours (Activity-Tours):
 
@@ -70,7 +79,8 @@ On the other hand, if the agent does not select the car driver mode for the long
 Furthermore, it is important to note that the car driver mode is filtered based on the agent's car license and household vehicle ownership attributes. In addition, the car passenger mode is available only to agents with a household owning a car.
 
 ## Transport model
-The probability mode choice distribution is computed using a multinomial logit (MNL) model. Utilities are scored for each mode and the probability mode choice distribution is computed.
+The probability mode choice distribution is computed using a [`multinomial logit (MNL) model`](src/main/java/nl/uu/iss/ga/util
+/MNLModalChoiceModel.java). Utilities are scored for each mode and the probability mode choice distribution is computed.
 Coefficients can be initialised with any value desired. This can also be used for sensitivity analysis and calibration.
 The parameter sets file needs to be specified by the command line with the argument `parameter_file`. In addition, each row of this file is a different parameter set (useful when iteratively running different parameter sets for sensitivity analysis or calibration). Hence, the argument `parameterset_index` specifies the index within such file.
 [`baselines_parameterset.csv`](src/main/resources/baseline_parameterset/parameterset.csv) contains the a parameter set where all the values are neutral. 
