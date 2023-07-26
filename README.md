@@ -2,8 +2,6 @@
 
 # Agent-Based Simulation of Human Mobility Behaviour
 
-Utrecht University, The Netherlands
-
 ## Table of Contents
 
 1.  [Description](#description)
