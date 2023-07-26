@@ -2,15 +2,23 @@
 
 # Agent-Based Simulation of Human Mobility Behaviour
 
-**Utrecht University, The Netherlands. 2022 - 2023**
+Utrecht University, The Netherlands
 
-Author: Marco Pellegrino
+## Table of Contents
 
-Contributors: Jan de Mooij, Tabea Sonnenschein, Mehdi Dastani, Dick Ettema, Brian Logan, Judith A. Verstegen
+1.  [Description](#description)
+2.  [Simulation](model_process.md)
+3.  [Agent's attributes](attributes.md)
+4.  [Invoking program](#Invoking program)
+5.  [Build instructions](#Build instructions)
+6.  [Prerequisites](#Prerequisites)
+7.  [This library](#This library)
+8.  [Contributors](#contributors)
+9.  [License](#license)
 
 ## Description
 
-A large-scale data-driven agent-based model designed to simulate individual agents' mode choice decisions for specific activity schedules within Den Haag's Zuid-West district in The Netherlands. The model integrates real-world data to precisely capture transportation preferences, providing a valuable tool for enhancing sustainable urban planning and informing transportation policy.
+A large-scale data-driven agent-based model designed to simulate individual agents' mode choice decisions for specific activity schedules within Den Haag's Zuid-West district in The Netherlands. This project was undertaken at Utrecht University, The Netherlands, during 2022-2023 by Marco Pellegrino and a team of contributors. The model integrates real-world data to precisely capture transportation preferences, providing a valuable tool for enhancing sustainable urban planning and informing transportation policy.
 
 ## Invoking program
 
@@ -39,7 +47,7 @@ Prerequisites:
 *   [Sim-2APL](https://github.com/A-Practical-Agent-Programming-Language/Sim-2APL)
 *   (Maven)
 
-### Sim-2APL
+##### Sim-2APL
 
 Download [Sim-2APL](https://github.com/A-Practical-Agent-Programming-Language/Sim-2APL) from Github,  
 and, to ensure compatibility, checkout the `v2.0.0` version tag.
@@ -73,10 +81,17 @@ Invoke the program with the argument `--help`
 
 In the [resource](src/main/resources/) directory, an example [configuration](src/main/resources/config_full.toml) TOML file is given.
 
-## Detailled explanation
--   [See this page](attributes.md) for the agents attributes and the information needed for the simulation
--   [See this page](model_process.md) for a detailled explanation of the simulation.
+## Contributors
 
+This project was made possible thanks to the hard work and contributions from the following individuals:
+
+*   Marco Pellegrino (Author)
+*   Jan de Mooij
+*   Tabea Sonnenschein
+*   Mehdi Dastani
+*   Dick Ettema
+*   Brian Logan
+*   Judith A. Verstegen
 
 ## License
 
