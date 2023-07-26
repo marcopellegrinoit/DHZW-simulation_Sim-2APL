@@ -5,8 +5,8 @@
 ## Table of Contents
 
 1.  [Description](#description)
-2.  [Simulation](model_process.md)
-3.  [Agent's attributes](attributes.md)
+2.  [Simulation](README_model.md)
+3.  [Agent's attributes](README_attributes.md)
 4.  [Invoking program](#invoking-program)
 5.  [Build instructions](#build-instructions)
 6.  [Prerequisites](#prerequisites)
